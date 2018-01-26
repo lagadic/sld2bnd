@@ -1,12 +1,15 @@
 # sld2bnd
-Solidworks *.sld to *.bnd format converter
+Solidworks `*.sld` to `*.bnd` format converter
 
 # Content
 
 This project contains the `sld2bnd` binary source code that allows to convert
-*.sld files into *.bnd files. These files are used in ViSP (https://github.com/lagadic/visp) robot simulator.
+`*.sld` files into `*.bnd` files. These files are used in ViSP (https://github.com/lagadic/visp) robot simulator.
 
-# How to build (tested on ubuntu 16.04)
+This project was tested on Ubuntu 16.04 and OsX.
+The only external dependency is `bison`.
+
+# How to build
 
     sudo apt-get install bison
     mkdir build
@@ -16,9 +19,9 @@ This project contains the `sld2bnd` binary source code that allows to convert
 
 # How to use
 
-   ./sld2bnd -?
+    ./sld2bnd -?
 
 Example
 
-   ./sld2bnd -o bras.bnd../data-sld/bras.sld
+    ./sld2bnd -o bras.bnd../data-sld/bras.sld
 
