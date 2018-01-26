@@ -1,0 +1,12 @@
+extern void *alloue_geometrie_paral(int);
+extern void *alloue_geometrie_paraln(int);
+extern void *alloue_geometrie_tri(int);
+extern void *alloue_geometrie_trin(int);
+extern void *alloue_geometrie_quad(int);
+extern void *alloue_geometrie_quadn(int);
+extern void init_bdd_geo(void);
+extern void *(*alloue_geometrie[NBTYPE])(int);
+extern void genere_objet_GIN(void);
+extern int nbentites;
+extern int NbEntitesMax;
+extern Entite **tabentite;

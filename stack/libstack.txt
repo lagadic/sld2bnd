@@ -1,0 +1,597 @@
+*************************************************
+*	LIBRAIRIE DE GESTION DES PILES		*
+*************************************************
+
+Fichiers source:	- cmstack.c
+			- imstack.c
+			- rdstack.c
+			- rfstack.c
+			- slstack.c
+			- tmstack.c
+			- vwstack.c
+
+
+--------------------
+Contenu de cmstack.c
+--------------------
+
+Le module "cmstack.c" contient les procedures de gestion 
+de la pile des cameras (CaMera STACK).
+
+La pile des cameras comporte STACKSIZE elements.
+Le sommet de pile est la camera pour les modules de synthese d'image 3D.
+
+ fprintf_cmstack	Affiche   un parametre du sommet de la pile.
+ get_cmstack		Retourne  le sommet de la pile des cameras.
+ load_cmstack		Charge    le sommet de la pile des cameras.
+ pop_cmstack		Depile    la pile des cameras.
+ push_cmstack		Empile    la pile des cameras.
+ swap_cmstack		Echange	  les deux premieres cameras de la pile.
+ add_cmstack		Modifie	  le sommet de la pile des cameras.
+
+*************************************************************************** 
+
+"fprintf_cmstack" affiche un parametre du sommet de la pile des cameras.
+Entree:
+fp		Fichier de sortie.
+argv		Argument a afficher.
+		Si argv est nul, tous les parametres sont affiches.
+
+void	fprintf_cmstack (fp, argv)
+register FILE			*fp;
+register char			*argv;
+
+-------------------------------------------------------------------------
+"get_cmstack" retourne la camera au sommet de la pile des cameras.
+Sortie :
+		Pointeur sur la camera du sommet de la pile.
+
+Camera_parameters	*	get_cmstack ()
+
+-------------------------------------------------------------------------
+"load_cmstack" charge une camera au sommet de la pile des cameras.
+Entree:
+cp		Point de vue a charger.
+
+void load_cmstack (cp)
+Camera_parameters	*cp;
+
+-------------------------------------------------------------------------
+"pop_cmstack" depile la camera au sommet de la pile des cameras.
+
+void	pop_cmstack ()
+
+-------------------------------------------------------------------------
+"push_cmstack" empile et duplique la camera au sommet de la pile des cameras.
+
+void	push_cmstack ()
+
+-------------------------------------------------------------------------
+"swap_cmstack" echange les deux premiers elements de la pile des cameras.
+
+void swap_cmstack ()
+
+-------------------------------------------------------------------------
+"add_cmstack" modifie un argument de la camera au sommet de la pile des cameras.
+Entree:
+va_alist	Nom de l'argument a modifier suivi de ses parametres.
+
+void	add_cmstack (va_alist)
+va_dcl
+
+
+
+
+
+--------------------
+Contenu de imstack.c
+--------------------
+
+Le module "imstack.c" contient les procedures de gestion
+de la pile des images (IMage STACK).
+
+La pile des images comporte STACKSIZE elements.
+Le sommet de pile est l'image pour les modules de synthese d'image 3D.
+ 
+
+ fprintf_imstack	Affiche   un parametre du sommet de la pile des images.
+ get_imstack		Retourne  le sommet de la pile des images.
+ load_imstack		Charge    le sommet de la pile des images.
+ pop_imstack		Depile    la pile des images.
+ push_imstack		Empile    la pile des images.
+ swap_imstack		Echange	  les deux premieres images de la pile.
+ add_imstack		Modifie	  le sommet de la pile des images.
+ 
+
+***************************************************************************
+"fprintf_imstack" affiche un parametre du sommet de la pile des images.
+Entree:
+fp		Fichier de sortie.
+argv		Argument a afficher.
+		Si argv est nul, tous les parametres sont affiches.
+
+void	fprintf_imstack (fp, argv)
+register FILE			*fp;
+register char			*argv;
+
+---------------------------------------------------------------------------
+"get_imstack" retourne l'image au sommet de la pile des images.
+Sortie :
+		Pointeur sur l'image du sommet de la pile.
+
+Image_parameters	*	get_imstack ()
+
+---------------------------------------------------------------------------
+"load_imstack" charge un point de vue au sommet de la pile des images.
+Entree:
+ip		Point de vue a charger.
+
+void	load_imstack (ip)
+Image_parameters	*ip;
+
+---------------------------------------------------------------------------
+"pop_imstack" depile l'image au sommet de la pile des images.
+
+void pop_imstack ()
+
+---------------------------------------------------------------------------
+"push_imstack" empile et duplique l'image au sommet de la pile des images.
+
+void	push_imstack ()
+
+---------------------------------------------------------------------------
+"swap_imstack" echange les deux premiers elements de la pile des images.
+
+void	swap_imstack ()
+
+---------------------------------------------------------------------------
+"add_imstack" modifie un argument de l'image au sommet de la pile des images.
+Entree:
+va_alist	Nom de l'argument a modifier suivi de ses parametres.
+
+void	add_imstack (va_alist)
+va_dcl
+
+
+
+
+--------------------
+Contenu de rdstack.c
+--------------------
+
+Le module "rdstack.c" contient les procedures de gestion
+de la pile des aspects de synthese (Render  STACK).
+
+La pile des aspects comporte STACKSIZE elements.
+Le sommet de pile est l'aspect courant pour les modules de synthese d'image 3D.
+
+
+ fprintf_rdstack	Affiche   un parametre du sommet de la pile.
+ get_rdstack		Retourne  le sommet de la pile des aspects.
+ load_rdstack		Charge    le sommet de la pile des aspects.
+ pop_rdstack		Depile    la pile des aspects.
+ push_rdstack		Empile    la pile des aspects.
+ swap_rdstack		Echange	  les deux premieres points de vue de la pile.
+ add_rdstack		Modifie	  le sommet de la pile des aspects.
+ 
+*****************************************************************************
+
+"fprintf_rdstack" affiche un parametre du sommet
+de la pile des aspects.
+Entree :
+fp		Fichier de sortie.
+argv		Argument a afficher.
+		Si argv est nul, tous les parametres sont affiches.
+
+void	fprintf_rdstack (fp, argv)
+register FILE			*fp;
+register char			*argv;
+
+-----------------------------------------------------------------------------
+La procedure "get_rdstack" retourne le point de vue au sommet
+de la pile des aspects.
+Sortie :
+		Pointeur sur le point de vue du sommet de la pile.
+
+Render_parameters	*	get_rdstack ()
+
+-----------------------------------------------------------------------------
+La procedure "load_rdstack" charge un point de vue au sommet
+de la pile des aspects.
+Entree :
+rp		Point de vue a charger.
+
+void	load_rdstack (rp)
+Render_parameters	*rp;
+
+-----------------------------------------------------------------------------
+La procedure "pop_rdstack" depile le point de vue au sommet
+de la pile des aspects.
+
+void	pop_rdstack ()
+
+-----------------------------------------------------------------------------
+La procedure "push_rdstack" empile et duplique le point de vue au sommet
+de la pile des aspects.
+
+void	push_rdstack ()
+
+-----------------------------------------------------------------------------
+La procedure "swap_rdstack" echange les deux premiers elements
+de la pile des aspects.
+
+void	swap_rdstack ()
+
+-----------------------------------------------------------------------------
+La procedure "add_rdstack" modifie un agrument du point de vue au sommet
+de la pile des aspects.
+Entree :
+va_alist	Nom de l'argument a modifier suivi de ses parametres.
+
+void	add_rdstack (va_alist)
+va_dcl
+
+
+
+
+
+--------------------
+Contenu de rfstack.c
+--------------------
+
+Le module "rfstack.c" contient les procedures de gestion
+de la pile d'elimination de faces (Remove Faces STACK).
+
+La pile d'elimination de faces comporte STACKSIZE elements.
+Le sommet de pile contient les drapeaux d'elimination de faces
+pour les modules de synthese d'image 3D.
+
+ fprintf_rfstack	Affiche   un parametre du sommet de la pile.
+ get_rfstack		Retourne  le sommet de la pile des drapeaux.
+ load_rfstack		Charge    le sommet de la pile des drapeaux.
+ pop_rfstack		Depile    la pile des drapeaux d'elimination.
+ push_rfstack		Empile    la pile des drapeaux d'elimination.
+ swap_rfstack		Echange	  les deux premieres drapeaux de la pile.
+ add_rfstack		Ajoute	  des drapeaux au sommet de la pile.
+ sub_rfstack		Soustrait des drapeaux au sommet de la pile.
+
+
+----------------------------------------------------------------------------
+"fprintf_rfstack" affiche le sommet
+de la pile des drapeaux d'elimination de faces.
+Entree:
+fp		Fichier en sortie.
+
+void	fprintf_rfstack (fp)
+FILE	*fp;
+
+---------------------------------------------------------------------------
+"get_rfstack" retourne les drapeaux au sommet
+de la pile des drapeaux d'elimination de faces.
+Sortie 
+	Pointeur sur les drapeaux d'elimination du sommet de la pile.
+
+int	*	get_rfstack ()
+
+---------------------------------------------------------------------------
+"load_rfstack" charge des drapeaux au sommet
+de la pile des drapeaux d'elimination de faces.
+Entree:
+i		Niveau a charger.
+
+void	load_rfstack (i)
+int	i;
+
+---------------------------------------------------------------------------
+"pop_rfstack" depile les drapeaux au sommet
+de la pile des drapeaux d'elimination de faces.
+
+void	pop_rfstack ()
+
+---------------------------------------------------------------------------
+"push_rfstack" empile et duplique les drapeaux du sommet
+de la pile des drapeaux d'elimination de faces.
+
+void	push_rfstack ()
+
+---------------------------------------------------------------------------
+"swap_rfstack" echange les deux premiers elements
+de la pile des drapeaux d'elimination de faces.
+
+void	swap_rfstack ()
+
+---------------------------------------------------------------------------
+"add_rfstack" ajoute des drapeaux au sommet
+de la pile des drapeaux d'elimination de faces.
+
+void	add_rfstack (i)
+register int	i;
+
+---------------------------------------------------------------------------
+"sub_rfstack" soustrait des drapeaux au sommet
+de la pile des drapeaux d'elimination de faces.
+
+void	sub_rfstack (i)
+
+
+
+
+
+
+
+--------------------
+Contenu de slstack.c
+--------------------
+
+Le module "slstack.c" contient les procedures de gestion
+de la pile de niveaux de subdivision (Sudivision Level STACK).
+
+La pile des niveaux de subdivision comporte STACKSIZE elements.
+Le sommet de pile est le niveau de subdivision courant pour les modules
+de synthese d'image 3D.
+
+ get_slstack		Retourne  le sommet de la pile des niveaux.
+ load_slstack		Charge    le sommet de la pile des niveaux.
+ pop_slstack		Depile    la pile des niveaux de subdivision.
+ push_slstack		Empile    la pile des niveaux de subdivision.
+ swap_slstack		Echange	  les deux premiers niveaux de la pile.
+ add_slstack		Additionne le niveau de subdivision courant.
+
+******************************************************************************
+"get_slstack" retourne le niveau au sommet de la pile de subdivision.
+Sortie :
+	Pointeur sur le niveau de subdivision du sommet de la pile.
+
+int	*	get_slstack ()
+
+-------------------------------------------------------------------------------
+"load_slstack" charge un niveau au sommet de la pile des niveaux de subdivision.
+Entree:
+i		Niveau a charger.
+
+void	load_slstack (i)
+int	i;
+
+-------------------------------------------------------------------------------
+"pop_slstack" depile le niveau au sommet de la pile des niveaux de subdivision.
+
+void	pop_slstack ()
+
+-------------------------------------------------------------------------------
+"push_slstack" empile et duplique le niveau au sommet
+de la pile des niveaux de subdivision.
+
+void	push_slstack ()
+
+-------------------------------------------------------------------------------
+"swap_slstack" echange les deux premiers elements
+de la pile des niveaux de subdivision.
+
+void	swap_slstack ()
+
+-------------------------------------------------------------------------------
+"add_slstack" additionne un niveau au sommet
+de la pile des niveaux de subdivision.
+Entree:
+i		Niveau a additionner.
+
+void	add_slstack (i)
+int	i;
+
+
+
+
+
+
+--------------------
+Contenu de tmstack.c
+--------------------
+
+Le module "tmstack.c" contient les procedures de gestion
+de la pile de matrices de transformation (Transformation Matrix STACK).
+
+La pile de matrices de transformation comporte STACKSIZE elements.
+Le sommet de pile est la matrice de transformation courante pour les modules
+de synthese d'image 3D.
+
+ get_tmstack		Retourne  le sommet de la pile des matrices.
+ load_tmstack		Charge    le sommet de la pile des matrices.
+ pop_tmstack		Depile    la pile des matrices de transformation.
+ push_tmstack		Empile    la pile des matrices de transformation.
+ swap_tmstack		Echange	  les deux premieres matrices de la pile.
+ 
+ postmult_tmstack	Postmultiplie la matrice de transformation courante.
+ postrotate_tmstack	Postmultiplie par une rotation    le sommet de la pile.
+ postscale_tmstack	Postmultiplie par une homothetie  le sommet de la pile.
+ posttranslate_tmstack	Postmultiplie par une translation le sommet de la pile.
+ premult_tmstack	Premultiplie la matrice de transformation courante.
+ prerotate_tmstack	Premultiplie par une rotation    le sommet de la pile.
+ prescale_tmstack	Premultiplie par une homothetie  le sommet de la pile.
+ pretranslate_tmstack	Premultiplie par une translation le sommet de la pile.
+
+
+******************************************************************************
+"get_tmstack" retourne la matrice au sommet
+de la pile des matrices de transformation.
+Sortie :
+	Pointeur de la matrice au sommet de la pile.
+
+Matrix	*	get_tmstack ()
+
+-----------------------------------------------------------------------------
+"load_tmstack" charge une matrice au sommet
+de la pile des matrices de transformation.
+Entree:
+m		Matrice a charger.
+
+void	load_tmstack (m)
+Matrix	m;
+
+-----------------------------------------------------------------------------
+"pop_tmstack" depile la matrice au sommet
+de la pile des matrices de transformation.
+
+void	pop_tmstack ()
+
+-----------------------------------------------------------------------------
+"push_tmstack" empile et duplique le sommet
+de la pile des matrices de transformation.
+
+void	push_tmstack ()
+
+-----------------------------------------------------------------------------
+"swap_tmstack" echange les deux premieres matrices
+de la pile des matrices de transformation.
+
+void		swap_tmstack ()
+
+-----------------------------------------------------------------------------
+"postmult_tmstack" postmultiplie la matrice au sommet
+de la pile des matrices de transformation.
+Entree:
+m		Matrice multiplicative.
+
+void	postmult_tmstack (m)
+Matrix	m;
+
+-----------------------------------------------------------------------------
+"postrotate_tmstack" postmultiplie la matrice au sommet
+de la pile des matrices de transformation par une rotation.
+Entree:
+vp		Vecteur de rotation.
+
+void	postrotate_tmstack (vp)
+Vector *vp;
+
+-----------------------------------------------------------------------------
+"postscale_tmstack" postmultiplie la matrice au sommet
+de la pile des matrices de transformation par une homothetie.
+Entree:
+vp		Vecteur d'homothetie.
+
+void	postscale_tmstack (vp)
+Vector *vp;
+
+----------------------------------------------------------------------------
+"posttranslate_tmstack" postmultiplie la matrice au sommet
+de la pile des matrices de transformation par une translation.
+Entree:
+vp		Vecteur de translation.
+
+void	posttranslate_tmstack (vp)
+Vector *vp;
+
+-----------------------------------------------------------------------------
+"premult_tmstack" premultiplie la matrice au sommet
+de la pile des matrices de transformation.
+Entree:
+m		Matrice multiplicative.
+
+void	premult_tmstack (m)
+Matrix	m;
+
+----------------------------------------------------------------------------
+"prerotate_tmstack" premultiplie la matrice au sommet
+de la pile des matrices de transformation par une rotation.
+Entree:
+vp		Vecteur de rotation.
+
+void	prerotate_tmstack (vp)
+Vector *vp;
+
+----------------------------------------------------------------------------
+"prescale_tmstack" premultiplie la matrice au sommet
+de la pile des matrices de transformation par une homothetie.
+Entree:
+vp		Vecteur d'homothetie.
+
+void	prescale_tmstack (vp)
+Vector *vp;
+
+----------------------------------------------------------------------------
+"pretranslate_tmstack" premultiplie la matrice au sommet
+de la pile des matrices de transformation par une translation.
+Entree:
+vp		Vecteur de translation.
+
+void	pretranslate_tmstack (vp)
+Vector *vp;
+
+
+
+
+
+--------------------
+Contenu de vwstack.c
+--------------------
+
+Le module "vwstack.c" contient les procedures de gestion
+de la pile des points de vue (VieW STACK).
+
+La pile des points de vue comporte STACKSIZE elements.
+Le sommet de pile est le point de vue pour les modules de synthese d'image 3D.
+
+ fprintf_vwstack	Affiche   un parametre du sommet de la pile.
+ get_vwstack		Retourne  le sommet de la pile des points de vue.
+ load_vwstack		Charge    le sommet de la pile des points de vue.
+ pop_vwstack		Depile    la pile des points de vue.
+ push_vwstack		Empile    la pile des points de vue.
+ swap_vwstack		Echange	  les deux premieres points de vue de la pile.
+ add_vwstack		Modifie	  le sommet de la pile des points de vue.
+ 
+******************************************************************************
+
+"fprintf_vwstack" affiche un parametre du sommet
+de la pile des prises de vue.
+Entree:
+fp		Fichier de sortie.
+argv		Argument a afficher.
+		Si argv est nul, tous les parametres sont affiches.
+
+void	fprintf_vwstack (fp, argv)
+register FILE			*fp;
+register char			*argv;
+
+-----------------------------------------------------------------------------
+"get_vwstack" retourne le point de vue au sommet
+de la pile des points de vue.
+Sortie :
+	Pointeur sur le point de vue du sommet de la pile.
+
+View_parameters	*	get_vwstack ()
+
+-----------------------------------------------------------------------------
+"load_vwstack" charge un point de vue au sommet
+de la pile des points de vue.
+Entree:
+vp		Point de vue a charger.
+
+void	load_vwstack (vp)
+View_parameters	*vp;
+
+-----------------------------------------------------------------------------
+"pop_vwstack" depile le point de vue au sommet de la pile des points de vue.
+
+void	pop_vwstack ()
+
+-----------------------------------------------------------------------------
+"push_vwstack" empile et duplique le point de vue au sommet
+de la pile des points de vue.
+
+void	push_vwstack ()
+
+-----------------------------------------------------------------------------
+"swap_vwstack" echange les deux premiers elements
+de la pile des points de vue.
+
+void	swap_vwstack ()
+
+-----------------------------------------------------------------------------
+"add_vwstack" modifie un argument du point de vue au sommet
+de la pile des points de vue.
+Entree:
+va_alist	Nom de l'argument a modifier suivi de ses parametres.
+
+void	add_vwstack (va_alist)
+va_dcl
+

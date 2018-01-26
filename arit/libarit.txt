@@ -1,0 +1,416 @@
+******************************
+*  LIBRAIRIES MATHEMATIQUES  *
+******************************
+
+--------------------
+Contenu de "arit.c":
+--------------------
+
+ fprintf_matrix		Affiche      une matrice.
+ ident_matrix		Initialise    une matrice par l'identite.
+ premult_matrix		PreMultiplie  une matrice par une matrice 4x4.
+ premult3_matrix	Premultiplie  une matrice par une matrice 3x3.
+ prescale_matrix	PreMultiplie  une matrice par une homothetie.
+ pretrans_matrix	PreMultiplie  une natrice par une translation.
+ postleft_matrix	Postmultiplie une matrice par une matrice gauche.
+ postmult_matrix	PostMultiplie une matrice par une autre.
+ postmult3_matrix	Postmultiplie une matrice par une matrice 3x3.
+ postscale_matrix	PostMultiplie une matrice par une homothetie.
+ posttrans_matrix	PostMultiplie une matrice par une translation.
+ transpose_matrix	Transpose     une matrice.
+
+ cosin_to_angle		Calcule    un angle a partir d'un cosinus et d'un sinus.
+ cosin_to_lut	  	Precalcule les tables pour cosinus et sinus.
+ point_matrix		Passage de 3D en 4D pour un point.
+ point_3D_3D		Passage de 3D en 3D pour un tableau de points.
+ point_3D_4D		Passage de 3D en 4D pour un tableau de points.
+ norm_vector	  	Norme      un vecteur.
+ plane_norme	  	Calcule    un vecteur normal a un plan.
+ rotate_vector		Transforme un vecteur par rotation.
+ upright_vector		Calcule	   un vecteur perpendiculaire a un vecteur.
+
+ Matrix_to_Position	Initialise une position par une matrice.
+ Matrix_to_Rotate	Initialise les rotations a partir d'une matrice.
+ Position_to_Matrix	Initialise une matrice par une position.
+ Rotate_to_Matrix	Initialise une matrice par une rotation.
+ Rotaxis_to_Matrix	Initialise une matrice par une rotation sur un axe.
+ Rotrans_to_Matrix 	Initialise une matrice par une rotation translation.
+ Scale_to_Matrix 	Initialise une matrice par une homothetie.
+ Translate_to_Matrix	Initialise une matrice par une translation.
+
+******************************************************************************
+
+"fprintf_matrix" affiche une matrice sur un fichier.
+Entree:	fp	Fichier en sortie.
+	m	Matrice a ecrire.
+ 
+void fprintf_matrix (fp, m)
+REGISTER FILE	*fp;
+REGISTER Matrix	m;
+
+----------------------------------------------------------------------
+"ident_matrix" initialise la matrice par la matrice identite.
+Entree:	m	Matrice a initialiser.
+
+void ident_matrix (m)
+REGISTER Matrix	m;
+
+----------------------------------------------------------------------
+"premult_matrix" premultiplie la matrice par la seconde.
+Entree:	a	Premiere matrice du produit a = b * a.
+	b	Seconde  matrice du produit.
+
+void premult_matrix (a, b)
+REGISTER Matrix	a, b;
+
+----------------------------------------------------------------------
+"premult3_matrix" premultiplie la matrice par une matrice 3x3.
+Note : La procedure "premult3_matrix" optimise "premutl_matrix".
+Entree:	a	Premiere matrice du produit a = b * a.
+	b	Seconde  matrice du produit 3x3.
+
+void premult3_matrix (a, b)
+REGISTER Matrix	a, b;
+
+----------------------------------------------------------------------
+"prescale_matrix" premultiplie la matrice par l'homothetie.
+Entree:	m	Matrice a multiplier m = vp * m.
+	vp	Vecteur d'homothetie.
+
+void prescale_matrix (m, vp)
+REGISTER Matrix	m;
+REGISTER Vector *vp;
+
+----------------------------------------------------------------------
+"pretrans_matrix" premultiplie la matrice par la translation.
+Entree:	m	Matrice a multiplier m = vp * m.
+	vp	Vecteur de translation.
+
+void pretrans_matrix (m, vp)
+REGISTER Matrix	m;
+REGISTER Vector	*vp;
+
+----------------------------------------------------------------------
+"postleft_matrix" postmultiplie la matrice par une matrice gauche sur un des axes.
+Entree:	m	Matrice a rendre gauche m = m * left.
+	axis	Axe de la matrice gauche 'x', 'y' ou 'z'.
+
+void postleft_matrix (m, axis)
+REGISTER Matrix	m;
+char		axis;
+
+----------------------------------------------------------------------
+"postmult_matrix" post multiplie la matrice par la seconde.
+Entree:	a	Premiere matrice du produit a = a * b.
+	b	Seconde  matrice du produit.
+
+void postmult_matrix (a, b)
+REGISTER Matrix	a, b;
+
+----------------------------------------------------------------------
+"postmult3_matrix" postmultiplie la matrice par une matrice 3x3.
+Note : La procedure "postmult3_matrix" optimise "postmutl_matrix".
+Entree:	a	Premiere matrice du produit a = a * b.
+	b	Seconde  matrice du produit 3x3.
+
+void postmult3_matrix (a, b)
+REGISTER Matrix	a, b;
+
+----------------------------------------------------------------------
+"postscale_matrix" post multiplie la matrice par l'homothetie.
+Entree:	m	Matrice a multiplier m = m * vp.
+	vp	Vecteur d'homothetie.
+
+void postscale_matrix (m, vp)
+REGISTER Matrix	m;
+REGISTER Vector *vp;
+
+----------------------------------------------------------------------
+"posttrans_matrix" post mutiplie la matrice par la translation.
+Entree:	m	Matrice a multiplier m = m * vp.
+	vp	Vecteur de translation.
+
+void posttrans_matrix (m, vp)
+REGISTER Matrix	m;
+REGISTER Vector	*vp;
+
+----------------------------------------------------------------------
+"transpose_matrix" transpose la matrice.
+Entree:	m	Matrice a transposer.
+
+void transpose_matrix (m)
+REGISTER Matrix	m;
+
+----------------------------------------------------------------------
+"cosin_to_angle" calcule un angle a partir d'un cosinus et d'un sinus.
+Entree:	ca, sa	Cosinus et Sinus de l'angle.
+Sortie:		Angle en radians.
+
+float cosin_to_angle (ca, sa)
+REGISTER float	ca, sa;
+
+----------------------------------------------------------------------
+"cosin_to_lut" precalcule les tables des "cosinus" et "sinus".
+Les tables possedent "2 ** level" entrees pour M_PI_2 radians.
+Entree:	level	Niveau de decomposition.
+	coslut	Table pour la fonction "cosinus".
+	sinlut	Table pour la fonction "sinus".
+
+void cosin_to_lut (level, coslut, sinlut)
+Index		level;
+REGISTER float	*coslut, *sinlut;
+
+-----------------------------------------------------------------------
+"norm_vector" normalise le vecteur.
+Si la norme est nulle la normalisation n'est pas effectuee.
+Entree:	vp	Le vecteur a norme.
+Sortie:		La norme du vecteur.
+
+float norm_vector (vp)
+REGISTER Vector	*vp;
+
+-----------------------------------------------------------------------
+"plane_norme" calcule le vecteur norme orthogonal au plan
+defini par les 3 points.
+Entree:	np		Le vecteur norme orthogonal au plan.
+	ap, bp, cp	Points formant un repere du plan.
+
+void plane_norme (np, ap, bp, cp)
+Vector	*np;
+Point3f	*ap, *bp, *cp;
+
+----------------------------------------------------------------------- 
+"point_matrix" deplace un point 3D dans un espace 4D.
+Une matrice homogene 4x4 effectue le changement de repere.
+Entree: p4	Point   homogene resultat = p3 x m.
+	p3	Point   a deplacer.
+	m	Matrice de changement de repere.
+
+void point_matrix (p4, p3, m)
+REGISTER Point4f	*p4;
+REGISTER Point3f	*p3;
+REGISTER Matrix		m;
+
+-----------------------------------------------------------------------
+"point_3D_3D" deplace un tableau de points 3D dans un espace 3D.
+Une matrice 4x3 effectue le changement de repere.
+La quatrieme colonne de la matrice vaut [0, 0, 0, 1] et n'est pas utilisee.
+Entree:	ip	Tableau de points 3D a deplacer.
+	size	Taille  du tableau "ip".
+	m	Matrice de changement de repere.
+Sortie:	op	Tableau de points 3D resultat.
+
+void point_3D_3D (ip, size, m, op)
+REGISTER Point3f	*ip;
+int			size;
+REGISTER Matrix		m;
+REGISTER Point3f	*op;
+
+-----------------------------------------------------------------------
+"point_3D_4D" deplace un tableau de points 3D dans un espace 4D.
+Une matrice homogene 4x4 effectue le changement de repere.
+Entree:	p3	Tableau de points 3D a deplacer.
+	size	Taille  du tableau "p3".
+	m	Matrice de changement de repere.
+Sortie:	p4	Tableau de points 4D resultat.
+
+void point_3D_4D (p3, size, m, p4)
+REGISTER Point3f	*p3;
+int			size;
+REGISTER Matrix		m;
+REGISTER Point4f	*p4;	
+
+-----------------------------------------------------------------------
+"rotate_vector" transforme le vecteur
+par la rotation de sens trigonometrique d'angle et d'axe donnes.
+Entree:	vp	Vecteur a transformer.
+	a	Angle de rotation en degres.
+	axis	Vecteur directeur de l'axe de rotation.
+
+void rotate_vector (vp, a, axis)
+REGISTER Vector	*vp;
+float	a;
+Vector	*axis;
+
+-----------------------------------------------------------------------
+"upright_vector" calcule un vecteur perpendiculaire.
+Les vecteurs ont un produit scalaire nul.
+Entree:	vp	Vecteur origine.
+Sortie:	up	Vecteur perpendiculaire a vp.
+
+void upright_vector (vp, up)
+REGISTER Vector	*vp, *up;
+
+-----------------------------------------------------------------------
+"Matrix_to_Position" initialise la position par la matrice.
+Si M est la matrice, et P la position : M = R.Sid.T, P = (R,Sid,T).
+On suppose que la matrice de rotation 3x3 de M est unitaire.
+Entree:	m	Matrice de rotation et de translation.
+	pp	Position a initialiser.
+
+void Matrix_to_Position (m, pp)
+Matrix		m;
+Position	*pp;
+
+-----------------------------------------------------------------------
+"Matrix_to_Rotate" initialise la rotation par la matrice.
+Si M est la matrice, si R est la matrice de rotation :
+
+	 	| m00	m01	m02	0 |
+M = Rx.Ry.Rz =	| m10	m11	m12	0 |
+	 	| m20	m21	m22	0 |
+	 	| 0	0	0	1 |
+
+et	m00 = cy.cz		m01 = cy.sz		m02 = -sy
+	m10 = sx.sy.cz-cx.sz 	m11 = sx.sy.sz+cx.cz	m12 = sx.cy
+	m20 = cx.sy.cz+sx.sz	m21 = cx.sy.sz-sx.cz	m22 = cx.cy
+avec	ci = cos Oi et si = sin Oi.
+
+R = Rx.Ry.Rz
+Rx rotation autour de Ox d'angle O1
+Ry rotation autour de Oy d'angle O2
+Rz rotation autour de Oz d'angle O3
+
+Singularite : si |ry| == 90 degres alors rz = 0,
+		 soit une rotation d'axe 0z et d'angle "rx + rz".
+
+Entree:	m	Matrice contenant la composition des rotations.
+	vp	Rotations par rapport aux axes d'un repere droit en degres.
+
+void Matrix_to_Rotate (m, vp)
+REGISTER Matrix	m;
+REGISTER Vector	*vp;
+
+----------------------------------------------------------------------
+"Position_to_Matrix" initialise la matrice par la position.
+Matrice resultat : M = Sx.Sy.Sz.Rx.Ry.Rz.Tx.Ty.Tz
+Entree:	pp	Position de reference.
+	m	Matrice a initialiser.
+
+void Position_to_Matrix (pp, m)
+REGISTER Position	*pp;
+REGISTER Matrix		m;
+
+----------------------------------------------------------------------
+"Rotate_to_Matrix" initialise la matrice par la rotation.
+
+	 	| m00	m01	m02	0 |
+M = Rx.Ry.Rz =	| m10	m11	m12	0 |
+	 	| m20	m21	m22	0 |
+	 	| 0	0	0	1 |
+
+Rx rotation autour de Ox d'angle O1
+Ry rotation autour de Oy d'angle O2
+Rz rotation autour de Oz d'angle O3
+et	m00 = cy.cz		m01 = cy.sz		m02 = -sy
+	m10 = sx.sy.cz-cx.sz 	m11 = sx.sy.sz+cx.cz	m12 = sx.cy
+	m20 = cx.sy.cz+sx.sz	m21 = cx.sy.sz-sx.cz	m22 = cx.cy
+avec	ci = cos Oi et si = sin Oi.
+
+Entree:	vp	Rotations par rapport aux axes d'un repere droit en degres.
+	m	Matrice a initialiser.
+
+void Rotate_to_Matrix (vp, m)
+REGISTER Vector	*vp;
+REGISTER Matrix	m;
+
+----------------------------------------------------------------------
+"Rotaxis_to_Matrix" initialise la matrice par la rotation
+d'angle et d'axe donnes.
+Si M est la matrice, O l'angle et N le vecteur directeur de l'axe :
+
+	M = cos(O) Id3 + (1 - cosO) Nt N + sinO N~
+
+	| NxNxverO+  cosO NxNyverO+NzsinO NxNzverO-NxsinO 0 |
+M =	| NxNyverO-NzsinO NyNyverO+  cosO NyNzverO+NxsinO 0 |
+	| NxNzverO+NysinO NyNzverO-NxsinO NzNzverO+  cosO 0 |
+	| 0		  0		  0		  1 |
+
+	O	angle de rotation.
+	N	Vecteur directeur norme de l'axe de rotation.
+	Nt	Vecteur transpose.
+	N~	| 0	 Nz	-Ny|
+		|-Nz	 0	 Nx|
+		| Ny	-Nx	 0 |
+Entree:	a	Angle de rotation en degres.
+	axis	Vecteur directeur de l'axe de la rotation.
+	m	Matrice a initialiser.
+
+void Rotaxis_to_Matrix (a, axis, m)
+float		a;
+Vector		*axis;
+REGISTER Matrix	m;
+
+---------------------------------------------------------------------
+"Rotrans_to_Matrix" initialise la matrice par la rotation et de la translation.
+Entree:	rp	Vecteur des angles de rotation en degres.
+	tp	Vecteur des coordonnees de translation.
+	m	Matrice a initialiser.
+
+void Rotrans_to_Matrix (rp, tp, m)
+REGISTER Vector	*rp;
+REGISTER Vector	*tp;
+REGISTER Matrix	m;
+
+---------------------------------------------------------------------
+"Scale_to_Matrix" initialise la matrice par l'homothetie.
+Entree:	vp	Vecteur des coordonnees d'homothetie.
+	m	Matrice a initialiser.
+
+void Scale_to_Matrix (vp, m)
+REGISTER Vector	*vp;
+REGISTER Matrix	m;
+
+---------------------------------------------------------------------
+"Translate_to_Matrix" initialise la matrice par la translation.
+Entree:	vp	Vecteur des coordonnees de translation.
+	m	Matrice a initialiser.
+
+void Translate_to_Matrix (vp, m)
+REGISTER Vector	*vp;
+REGISTER Matrix	m;
+
+
+
+
+----------------------
+Contenu de "linres.c":
+----------------------
+ decomp
+ forbak
+ inverse_matrix	  Initialise une matrice par une matrice inverse.
+
+*************************************************************************
+
+"decomp" effectue la decomposition LU de la matrice homogene
+dans la matrice "lud", "irow" donne les permutations de lignes.
+Entree:	ma	Matrice su systeme lineaire "A".
+Sortie:	TRUE aux s'il n'y a pas de singularite => solution,
+	FALSE sinon.
+
+static	int decomp (ma)
+Matrix	ma;
+
+------------------------------------------------------------------------
+"forbak" resoud "A.X = B" en resolvant
+ 1) L^C = B^	(forward substitution)
+ 2) U^X = CBAR (backward substitution)
+en utilisant "lud" et "irow" etablies par la procedure "decomp".
+Entree:	tx	Vecteur resultat "X".
+	tb	Vecteur du systeme "B".
+
+static	void forbak (tx, tb)
+register float	*tx;
+register float	*tb;
+
+------------------------------------------------------------------------
+"inverse_matrix" initialise la matrice par une matrice inverse.
+Entree:	im	Matrice a initialiser.
+	m	Matrice initiale.
+Sortie:	TRUE si la matrice "m" est inversible,
+ 	FALSE sinon.
+
+inverse_matrix (im, m)
+register Matrix im;
+register Matrix	m;
+

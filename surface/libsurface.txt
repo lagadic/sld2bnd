@@ -1,0 +1,1998 @@
+*************************************************
+*	LIBRAIRIE DU MODELE SURFACIQUE		*
+*		CONSTRUCTION			*
+*************************************************
+
+Fichiers source:	- block.c
+			- bound.c
+			- box.c
+			- cardioide.c
+			- compress.c
+			- cone.c
+			- cssp.c
+			- cylinder.c
+			- fractal.c
+			- grid.c
+			- patch.c
+			- pipe.c
+			- reduce.c
+			- sphere.c
+			- strip.c
+			- wedge.c
+			- torus.c
+
+
+------------------
+Contenu de block.c
+------------------
+
+Le module "block.c" contient les procedures de construction
+de la surface de la primitive "Block".
+
+Remarque : Le niveau de decomposition de la primitive "Block" est fixe.
+
+ make_Block_Bound	Construit la  surface du block unite.
+ make_Block_Face	Construit les faces   du block unite.
+ make_Block_Point	Construit les points  du block unite.
+
+------------------------------------------------------------------------------
+"make_Block_Bound" construit la surface du block unite :
+	- origine   (0,0,0).
+	- diagonale (1,1,1).
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : 
+Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp		Surface issue de la construction.
+
+make_Block_Bound (bp)
+register Bound	*bp;
+
+
+------------------------------------------------------------------------------
+"make_Block_Face" constuit les 6 faces du block unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Numeros des faces		|Y		
+				|    5/		
+				|____/____
+			       /         /|	
+			      /    3	/ |	
+			     /_________/  |	
+			    |	      | 1 |
+			0___|         |   |___X	
+			    |    4    |  /
+			    |         | /	
+			    |_________|/
+			   /    |		
+			 Z/     |2
+Remarque :
+Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp		Tableau de faces issu de la construction.
+
+static	void	make_Block_Face (fp)
+register Face	*fp;
+
+------------------------------------------------------------------------------
+"make_Block_Point" construit les 8 points du block unite.
+Numeros des points		|Y
+				| 
+				1_________2
+			       /|        /|
+			      / | 	/ |
+			    7_________6/  |
+			    |	|     |   |
+			    |	0_____|___3___X
+			    |  /      |  /
+			    | /	      | /
+			    4/________5/
+			    /
+			  Z/
+Entree :
+	pp		Tableau de points issu de la construction.
+
+static	void	make_Block_Point (pp)
+register Point3f	*pp;
+
+
+
+
+
+
+------------------
+Contenu de bound.c
+------------------
+
+Le fichier "bound.c" contient les procedures de gestion
+des scenes de modele geometrique surfacique.
+
+ free_Bound		Libere une surface.
+ free_huge_Bound	Libere une surface de taille maximale.
+ free_Bound_scene	Libere une scene de surfaces.
+ malloc_Bound		Alloue une surface.
+ malloc_huge_Bound	Alloue une surface de taille maximale.
+ malloc_Bound_scene	Alloue une scene de surfaces.
+ malloc_Face_vertex3	Alloue une face a 3 sommets.
+ malloc_Face_vertex4	Alloue une face a 4 sommets.
+
+ set_Bound_face_normal	Initialise les normales aux faces d'une surface.
+ set_Bound_normal	Initialise les normales aux sommets  d'une surface.
+
+****************************************************************************
+
+
+"free_Bound" libere la memoire d'une surface.
+Les champs "bound.face.edge" ne sont pas utilises.
+Entree:
+	bp	Surface a liberer.
+
+free_Bound (bp)
+Bound	*bp;
+
+--------------------------------------------------------------------------
+"free_huge_Bound" libere  une surface de taille maximale.
+La particularite de cette surface est le tableau unique des sommets.
+Entree:
+	bp	Surface a liberer.
+
+free_huge_Bound (bp)
+Bound	*bp;
+
+--------------------------------------------------------------------------
+"free_Bound_scene" libere une scene de surfaces.
+Entree:
+	bsp	Scene a liberer.
+
+free_Bound_scene (bsp)
+Bound_scene	*bsp;
+
+--------------------------------------------------------------------------
+"malloc_Bound" alloue une surface.
+Les champs "bound.face.edge" ne sont pas utilises. 
+Entree:
+	bp		Surface a allouer.
+	type		Type de la surface.
+	polygonal	Booleen indiquant si la surface est polygonale.
+	fn		Nombre de faces  de la surface.
+	pn		Nombre de points de la surface. 
+
+malloc_Bound (bp, type, polygonal, fn, pn)
+register Bound	*bp;
+Type		type;
+int		polygonal;
+Index		fn, pn;
+
+-----------------------------------------------------------------------------
+"malloc_huge_Bound" alloue une surface de taille maximale.
+La surface est adaptee pour la reception de tout type de surface.
+La surface allouee peut etre utilisee comme une surface de travail.
+Sa taille est definie par les macros "..._NBR" de "world.h".
+FACE_NBR	: son nombre de faces
+POINT_NBR	: son nombre de points
+VECTOR_NBR	: son monbre de vecteurs
+VERTEX_NBR	: son nombre de sommets par face.
+La particularite de la surface vient de l'allocation en une seule fois
+d'un tableau de sommets. Les polygones des faces ne sont pas initialiser,
+exepte celui de la premiere face qui est la base du tableau des sommets.
+Les champs "bound.face.edge" ne sont pas utilises.
+Entree:
+	bp	Surface maximale a allouer.
+
+malloc_huge_Bound (bp)
+Bound	*bp;
+
+-----------------------------------------------------------------------------
+"malloc_Bound_scene" alloue une scene de surfaces.
+Stocke le nom de la scene et alloue l'espace memoire necessaire. 
+Les champs "bound.face.edge" ne sont pas utilises.
+Entree:
+	bsp		Scene a allouer.
+	name		Nom de la scene.
+	bn		Nombre de surfaces de la scene.
+
+malloc_Bound_scene (bsp, name, bn)
+Bound_scene	*bsp;
+char		*name;
+Index		bn;
+
+-----------------------------------------------------------------------------
+"malloc_Face_vertex3" initialise une face a 3 sommets.
+Le champ "face.edge" n'est pas utilise.
+Entree:
+	fp		Face a initialiser.
+	polygonal	Booleen indiquant si la face est une approximation 
+			polygonale.
+	i0, i1, i2	Indices des points aux sommets.
+
+malloc_Face_vertex3 (fp, polygonal, i0, i1, i2)
+Face	*fp;
+int	polygonal;
+Index	i0, i1, i2;
+
+-----------------------------------------------------------------------------
+"malloc_Face_vertex4" initialise une face a 4 sommets.
+Le champ "face.edge" n'est pas utilise.
+Entree:
+	fp		Face a initialiser.
+	polygonal	Booleen indiquant si la face est une approximation 
+			polygonale.
+	i0,i1,i2,i3	Indices des points aux sommets.
+
+malloc_Face_vertex4 (fp, polygonal, i0, i1, i2, i3)
+Face	*fp;
+int	polygonal;
+Index	i0, i1, i2, i3;
+
+
+#ifdef	face_normal
+------------------------------------------------------------------------------
+"set_Bound_face_normal" initialise les normales des faces
+de la surface "bp".
+Algorithme de Martin Newell :
+Soit le polygone :
+	- de n sommets "i" : 1 <= i <= n.
+	- appartenant au plan definie par : a * x + b * y + c * z + d = 0
+Avec j = 1 si i = n, i + 1 sinon, on a :
+	a = Z (yi - yj)(zi + zj)
+	b = Z (zi - zj)(xi + xj)
+	c = Z (xi - xj)(yi + yj)
+Entree:
+	bp		Surface a initialiser.
+
+set_Bound_face_normal (bp)
+Bound	*bp;
+
+
+
+#ifdef	face_normal
+------------------------------------------------------------------------------
+"set_Bound_normal" initialise les normales aux sommets
+de la surface "bp".
+Deux cas se presentent :
+La surface "bp" est polygonale.
+	La normale a un sommet est egale a la normale a la face
+	contenant le sommet.
+	Les normales aux sommets sont deja connues et ne sont pas recalculees.
+La surface "bp" n'est pas polygonale.
+	La normale a un sommet est egale a la moyenne des normales des faces
+	non polygonale partageant le sommet.
+Entree:
+	bp	Surface a initialiser.
+
+set_Bound_normal (bp)
+Bound	*bp;
+
+
+
+
+
+----------------
+Contenu de box.c
+----------------
+
+Le fichier "box.c" contient les procedures de gestion des parallelepipedes rectangles englobants ou boites englobantes.
+
+ make_Bounding_box_Bound	Construit la  surface de la boite englobante.
+ make_Bounding_box_Face		Construit les faces   de la boite englobante.
+ make_Bounding_box_Point	Construit les points  de la boite englobante.
+
+ set_Bounding_box		Initialise une boite  englobante.
+ union_Bounding_box		Union      de  boites englobantes.
+
+*****************************************************************************
+
+"make_Bounding_box_Bound" contruit la surface polygonale
+d'une boite englobante :
+	- origine   (xmin,ymin,zmin).
+ 	- diagonale (xmax,ymax,zmax).
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bbp		Boite englobante origine. 
+Entree/Sortie :
+	bp		Surface issue de la construction.
+
+make_Bounding_box_Bound (bbp, bp)
+register Bounding_box	*bbp;
+register Bound		*bp;
+
+------------------------------------------------------------------------------
+"make_Bounding_box_Face" constuit les 6 faces d'une boite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Numeros des faces		|Y		
+				|    5/		
+				|____/____
+			       /         /|	
+			      /    3	/ |	
+			     /_________/  |	
+	 		    |	      | 1 |
+			0___|         |   |___X	
+			    |    4    |  /
+			    |         | /	
+			    |_________|/
+			   /    |		
+			 Z/     |2
+Remarque :
+Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+
+static	void	make_Bounding_box_Face (fp)
+register Face	*fp;
+
+-----------------------------------------------------------------------------
+"make_Bounding_box_Point" constuit les 8 points d'une boite.
+Numeros des points		|Y
+				| 
+				1_________2
+			       /|        /|
+			      / | 	/ |
+			    7_________6/  |
+			    |	|     |   |
+			    |	0_____|___3___X
+			    |  /      |  /
+			    | /	      | /
+			    4/________5/
+			    /
+			  Z/
+Entree :
+	bbp	Boite englobante.
+Entree/Sortie :
+	pp	Tableau de points issu de la construction.
+
+static	void
+make_Bounding_box_Point (bbp, pp)
+register Bounding_box	*bbp;
+register Point3f	*pp;
+
+-----------------------------------------------------------------------------
+"set_Bounding_box" initialise la boite englobante
+par les bornes du tableau de points 3D sur les axes (x,y,z).
+Entree :
+	pp		Tableau de points 3D.
+	size		Taille  du tableau "pp".
+Entree/Sortie :
+	bbp		Boite a initialiser.
+
+set_Bounding_box (pp, size, bbp)
+register Point3f	*pp;
+int			size;
+register Bounding_box	*bbp;
+
+-----------------------------------------------------------------------------
+"union_Bounding_box" calcule la boite englobant deux boites.
+Entree :
+	bbp0, bbp1	Boites englobantes a unir.
+Entree/Sortie :
+	bbp		Boite englobante resultat : bbp = bbp0 U bbp1.
+
+union_Bounding_box (bbp, bbp0, bbp1)
+register Bounding_box	*bbp, *bbp0, *bbp1;
+
+
+
+
+
+
+----------------------
+Contenu de cardioide.c
+----------------------
+
+Le module "cardioide.c" contient les procedures de
+construction de la surface de la primitive "Cardioide".
+La primitive est obtenue par rotation d'une courbe "cardioide"
+autour de son axe de symetrie.
+
+La courbe cardioide a pour equation en coordonnes polaires :
+
+	ro = a (1 + cos(teta)),
+
+avec teta compris entre 0 et 2*PI, avec a = 1 pour la cardioide unite.
+Dans le plan (X,Y) on a :
+
+	x = ro cos(teta)
+	y = ro sin(teta)
+
+ make_Cardioide_Bound	Construit la surface de la cardioide unite.
+ make_Cardioide_Face	Construit les faces  de la cardioide unite.
+ make_Cardioide_Point	Construit les points de la cardioide unite.
+
+****************************************************************************
+
+
+"make_Cardioide_Bound" construit la surface de la cardioide
+unite dans le plan (Z,Y) avec rotation de la courbe par rapport a l'axe Z.
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp		Surface issue de la construction.
+	level	Niveau de decomposition.
+
+make_Cardioide_Bound (bp, level)
+register Bound	*bp;
+register Index	level;
+
+----------------------------------------------------------------------------
+"make_Cardioide_Face" constuit les faces de la cardioide unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Cardioide_Face (fp, level)
+register Face	*fp;
+register Index	level;
+
+-----------------------------------------------------------------------------
+"make_Cardioide_Point" construit les points de la cardioide
+unite. On a :
+	ro = a (1 + cos(teta)), avec a = 1, teta compris entre 0 et 2*PI.
+	x  = - ro * sin (teta) * sin(alpha),
+	y  =   ro * sin (teta) * cos(alpha),
+	z  =   ro * cos (teta), avec alpha compris entre 0 et PI.
+La cardioide a deux poles :
+Le pole nord est obtenu pour teta = 0  : (0,0,2)
+Le pole sud  est obtenu pour teta = PI : (0,0,0)
+	x  = 0
+Entree :
+	pp	Tableau de points issu de la construction.
+level	Niveau de decomposition.
+Remarque : Les points des poles ne sont pas dupliques.
+
+static	void	make_Cardioide_Point (pp, level)
+register Point3f	*pp;
+register Index		level;
+
+---------------------
+Contenu de compress.c
+---------------------
+
+Le module "compress.c" contient les procedures de compression
+de surfaces de modele geometrique surfacique polygonale.
+
+ check_Face		Verifie		une face et genere une face valide.
+ compress_huge_Face	Concatene	un tableau de faces.
+ compress_Point3f	Concatene 	un tableau de points 3D.
+ copy_Face		Copie		un tableau de faces.
+ copy_huge_Face		Copie		un talb;eau de faces de travail.
+ mark_Face_point	Marque		les points presents sur une face.
+ rename_Face_vertex	Renomme		les sommets d'un tableau de faces.
+
+*************************************************************************/
+
+
+"check_Face" verifie une face et genere une face valide.
+La verification porte sur les cas suivants :
+	- une face de moins de 3 sommmets n'est pas valide.
+	- deux sommets consecutifs identiques (... v v ...)
+	- deux aretes consecutives formant une boucle (... v0 v1 v0 ...)
+La procedure recopie les sommets valides dans la face resultat.
+Entree :
+	from		Face a verifier.
+Entree/Sortie :
+	to		Face valide.
+Sortie :
+	Nombre de sommet de la face apres verification.
+
+static	int
+check_Face (from, to)
+register Face	*from, *to;
+
+------------------------------------------------------------------------------
+"compress_huge_Face" concatene un tableau de faces issues
+d'une surface de travail allouee par "malloc_Huge_Bound".
+La concatenation s'effectue par recopie dess faces valides dans le tableau
+de faces en sortie.
+Entree :
+	from		Tableau de faces en entree.
+	size		Taille du tableau de faces en entree.
+Entree/Sortie :
+	to		Tableau de faces apres compression.
+Sortie :
+ 	Nombre de faces du tableau apres compression.
+
+compress_huge_Face (from, size, to)
+register Face	*from;
+int		size;
+register Face	*to;
+
+------------------------------------------------------------------------------
+"compress_Point3f" concatene un tableau de points en recopiant
+uniquement les points valides dans le tableau en sortie.
+Un point est non valide si sa marque correspondante (de meme indice) est
+nulle, un point est valide dans le cas contraire.
+Apres concatenation, le tableau des marques contient les nouveaux indices
+des points dans le tableau en sortie.
+Entree :
+	from		Tableau de points 3D a concatener.
+	size		Taille du tableau de points 3D.
+Entree/Sortie :
+	ip		Tableau des marques de validation des points.
+			Tableau des nouveaux indices des points.
+	to		Tableau de points 3D apres concatenation
+Sortie :
+	Taille du tableau de points 3D apres concatenation.
+
+compress_Point3f (from, size, ip, to)
+register Point3f	*from;
+int			size;
+register int		*ip;
+register Point3f	*to;
+
+-----------------------------------------------------------------------------
+"copy_Face" copie "size" faces du tableau de faces "from"
+dans le tableau de faces "to".
+Entree :
+	from		Tableau de faces a recopier.
+	to		Tableau de faces resultat.
+	size		Nombre de faces a recopier.
+Sortie :
+	Nombre de faces recopier de "from" dans "to".
+
+static	int	copy_Face (from, to, size)
+register Face	*from, *to;
+int		size;
+
+-----------------------------------------------------------------------------
+"copy_huge_Face" copie "size" faces du tableau de faces "from"
+dans le tableau de faces de travail "to" alloue par "malloc_huge_Bound".
+Entree :
+	from		Tableau de faces a recopier.
+	to		Tableau de faces de travail resultat.
+	size		Nombre de faces a recopier.
+Sortie :
+	Nombre de faces recopier de "from" dans "to".
+
+copy_huge_Face (from, to, size)
+register Face	*from, *to;
+int		size;
+
+-----------------------------------------------------------------------------
+"mark_Face_point" marque les points appartenant aux faces.
+Un point appartient a une face si son indice correspond a un sommet
+de la face. Un compteur de meme indice est associe a chaque point.
+Un compteur positif indique le nombre de faces auquelles appartient le point.
+Un compteur nul indique que le point correspondant (de meme indice)
+n'appartient a aucune face.
+Entree :
+	fp		Tableau des faces.
+	fsize		Taille du tableau des faces.
+	cp		Tableau des compteurs.
+	csize		Taille du tableau des compteurs.
+
+mark_Face_point (fp, fsize, cp, csize)
+register Face	*fp;
+int		fsize;
+register int	*cp;
+int		csize;
+
+-----------------------------------------------------------------------------
+"rename_Face_vertex" renomme les sommets des faces.
+Un sommet est l'indice du point correspondant dans un tableau de points 3D.
+Entree :
+	fp		Tableau de faces dont les sommets sont a reindicer.
+	size		Taille du tableau de faces.
+	ip		Tableau de reindicage des sommets.
+
+rename_Face_vertex (fp, size, ip)
+register Face	*fp;
+int		size;
+register int	*ip;
+
+
+
+
+
+
+-----------------
+Contenu de cone.c
+-----------------
+
+Le module "cone.c" contient les procedures de construction
+de la surface de la primitive "Cone".
+
+ make_Cone_Bound	Construit la surface du cone unite.
+ make_Cone_Face		Construit les faces  du cone unite.
+ make_Cone_Point	Construit les points du cone unite.
+
+****************************************************************************
+
+"make_Cone_bound" construit la surface du cone unite :
+	- cercle base de centre (0,0,1) et de rayon 1
+	- sommet (0,0,0)
+Le sens de parcours du contour d'une face donne le sens de
+la normale a la face.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp	Surface issue de la construction.
+	level	Niveau de decomposition;
+
+make_Cone_Bound (bp, level)
+register Bound	*bp;
+register Index	level;
+
+-----------------------------------------------------------------------------
+"make_Cone_Face" constuit les faces du cone unite.
+Le sens de parsours du contour d'une face donne le sens de la normale
+a la face.
+Numeros des faces :	|Z
+			|
+		       / \
+		      /   \
+		     /     \
+		    0______col-1__Y
+		  col	   2*col-1
+		   /
+		 X/
+
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Cone_Face (fp, level)
+register Face	*fp;
+register Index	level;
+
+-------------------------------------------------------------------------------
+"make_Cone_Point" construit les points du cone unite.
+Numero des points	| Z
+			|
+		        0
+		       / \
+		      /   \
+		     /     \
+		    1______col__Y
+		   /  col+1
+		 X/	|
+Entree :
+	pp		Tableau de points issu de la construction.
+	div		Niveau de decomposition
+
+static	void	make_Cone_Point (pp, level)
+register Point3f	*pp;
+register Index		level;
+-----------------
+Contenu de cssp.c
+-----------------
+
+Le module "cssp.c" contient les procedures de calcul
+de la matrice d'inertie et des valeurs propres.
+Les vecteurs propres de la matrice d'inertie forment une base orthonormee directe.
+
+CSSP : Matrix of Centered (or Corrected) Sums and Squares and Products.
+
+ equa_2			Resoud une equation du second    degre.
+ equa_2			Resoud une equation du troisieme degre.
+ lin_22			Resoud un systeme lineaire de deux equations.
+ pow_1_3		Calcule la racine cubique d'un reel.
+ newton_3		Resoud une equation du troisieme degre par Newton.
+ norme_CSSP		Normalise une matrice de covariance.
+
+ eigen_vector		Calcule un vecteur propre norme.
+ make_CSSP_inertia	Construit une matrice de rotation.
+ make_Point3f_list_CSSP	Construit une matrice de covariance.
+
+
+*****************************************************************************
+
+"equa_2" cherche les racines d'un polynome du 2eme degre en X.
+	a x^2 + b x + c = 0
+Les racines du polynome sot triees par valeurs decroissantes.
+Entree :
+	a, b, c	Coefficients du polynome.
+Entree/Sortie :
+	x1, x2	Racines du polynome.
+Sortie :
+	Code de la nature des resultats :
+Code 		x1	x2
+0		> 0	> 0	Racines indeterminees.
+0		< 0	< 0	Deux racines complexes.
+0		0	0	Pas de racines.
+1		x1	0	Une racine simple.
+2		x1	x1	Une racine double.
+2		x1	x2	Deux racines simples.
+
+static	equa_2 (a, b, c, x1, x2)
+double	a, b, c;
+double	*x1, *x2;
+
+-----------------------------------------------------------------------------
+"pow_1_3" calcule la racine cubique d'un nombre reel.
+Entree :
+	f		Nombre dont la racine est a calculer.
+Sortie :
+	Racine cubique.
+
+static double	pow_1_3 (f)
+double	f;
+
+-----------------------------------------------------------------------------
+"equa_3" cherche les racines d'un polynome du 3eme degre en X.
+	a x^3 + b x^2 + c x + d = 0
+Pour plus de renseignement, voir :
+SHARP PC-1211 : ORDINATEUR DE POCHE, MANUEL D'APPLICATIONS, pp 18-21.
+Entree :
+	a, b, c, d	Coefficients du polynome.
+Entree/Sortie :
+	x1, x2, x3	Racines du polynome.
+Sortie :
+		Code de la nature des resultats :
+Code 		x1	x2	x3
+0		> 0	> 0	0	Racines indeterminees.
+0		< 0	< 0	0	Deux racines complexes.
+0		0	0	0	Pas de racines.
+1		x1	0	0	Une racine simple.
+2		x1	x1	0	Une racine double.
+2		x1	x2	0	Deux racines simples.
+3		x1	< 0	< 0	Une racine reelle et deux complexes.
+3		x1	x1	x1	Une racine reelle triple.
+3		x1	x2	x2	Trois racines reelles dont une double.
+3		x1	x2	x3	Trois racines reelles simples.
+
+static	equa_3 (a, b, c, d, x1, x2, x3)
+double	a, b, c, d;
+double	*x1, *x2, *x3;
+
+----------------------------------------------------------------------------
+"lin_22" resoud un systeme lineaire 2x2 :
+2 equations :
+	a0 x + b0 y = c0
+	a1 x + b1 y = c1
+2 inconnues :
+	x, y
+Entree :
+	a0, b0, c0	Coefficients de la premiere equation.
+	a1, b1, c1	Coefficients de la seconde  equation.
+Entree/Sortie :
+	x, y		Solutions du systeme.
+Sortie :
+		TRUE si le systeme admet des solutions,
+		FALSE sinon.
+
+static	lin_22 (a0, b0, c0, a1, b1, c1, x, y)
+float	a0, b0, c0;
+float	a1, b1, c1;
+float	*x, *y;
+
+----------------------------------------------------------------------------
+"newton_3" cherche une racine d'un polynome du 3eme degre en X.
+	a x^3 + b x^2 + c x + d = 0
+Pour plus de renseignement, voir :
+INITIATION A L'ANALYSE NUMERIQUE, R. Theodor, CNAM cours A,
+1986, MASSON, pp 16-17.
+Entree :
+	x		Un germe proche de la racine cherchee.
+	a, b, c, d	Coefficients du polynome.
+Sortie :
+	La racine si elle a ete trouvee.
+	Le germe sinon.
+
+static	double	newton_3 (x, a, b, c, d)
+double	x;
+double	a, b, c, d;
+
+----------------------------------------------------------------------------
+"norme_CSSP" normalise une matrice de covariance.
+Seule la matrice 3x3 est normalisee, la derniere ligne n'est pas affectee.
+Entree/Sortie :
+	m	Matrice a normer.
+
+norme_CSSP (m)
+register Matrix	m;
+
+----------------------------------------------------------------------------
+"eigen_vector" calcule un vecteur propre norme associe
+a une matrice une valeur propre.
+Soient m la matrice de covariance, l la valeur propre,
+un vecteur propre [x y z] verifie le systeme lineaire 3x3 suivant :
+	(m[0][0]-l) x +  m[0][1]    y + m[0][2] z     = 0
+	 m[1][0]    x + (m[1][1]-l) y + m[1][2] z     = 0
+	 m[2][0]    x +  m[2][1]    y + (m[2][2]-l) z = 0
+Remarque :
+Le determinant de ce systeme est nul par definition de la valeur propre.
+Il existe donc une infinite de solutions.
+
+Entree :
+	m		Matrice.
+	l		Valeur propre.
+Entree/Sortie :
+	vp		Vecteur propre.
+
+static	eigen_vector (m, l, vp)
+register Matrix	m;
+register float	l;
+register Vector	*vp;
+
+------------------------------------------------------------------------------
+"make_CSSP_inertia" construit a partir de la matrice de
+covariance une matrice de rotation pour passer dans le repere
+des axes principaux d'inertie (composantes principales).
+Entree :
+	cssp		Matrice de covariance.
+Entree/Sortie :
+	m		Matrice de rotation.
+
+make_CSSP_inertia (cssp, m)
+register Matrix	cssp, m;
+
+
+
+#ifdef	inertia
+---------------------------------------------------------------------------
+"make_Point3f_list_CSSP" construit la matrice d'inertie
+a partir d'une liste de point 3D.
+
+			| A  F  E |
+	M inertie = 	| F  B  D |
+			| E  D  C |
+
+avec les variables centrees :
+
+A = Zi Y^2 + Z^2
+F = - Zi X Y 	B = Zi X^2 + Z^2
+E = - Zi X Z 	D = - Zi Y Z	 	C = Zi X^2 + Y^2
+
+En posant :
+
+a = Zi X^2		b = Zi Y^2		c = Zi Z^2
+A = b + c		B = a + c		C = a + b
+
+Entree :
+	lp		Liste de points 3D.
+Entree/Sortie :
+	m		Matrice d'inertie.
+ 
+make_Point3f_list_CSSP (lp, m)
+Point3f_list	*lp;
+register Matrix	m;
+
+#else
+-----------------------------
+"make_Point3f_list_CSSP" construit la matrice de covariance
+a partir d'une liste de point 3D.
+
+			| varx  covxy covxz |
+	M covariance =	| covxy vary  covyz |
+			| covxz covyz varz  |
+
+avec les variables centrees :
+
+Moyenne	: x     = 1/n Zi xi
+Variable	: cx    = xi - x
+Variance	: varx  = covxx =  1/n Zi cx^2
+Covariance	: covxy = covyx =  1/n Zi cx cy
+
+Entree :
+	lp		Liste de points 3D.
+Entree/Sortie :
+	m		Matrice d'inertie.
+ 
+make_Point3f_list_CSSP (lp, m)
+Point3f_list	*lp;
+register Matrix	m;
+#endif	inertia
+
+
+
+
+
+
+---------------------
+Contenu de cylinder.c
+---------------------
+
+Le module "cylinder.c" contient les procedures de construction
+de la surface de la primitive "Cylinder".
+
+ make_Cylinder_Bound	Construit la surface du cylindre unite.
+ make_Cylinder_Face	Construit les faces  du cylindre unite.
+ make_Cylinder_Point	Construit les points du cylindre unite.
+
+***************************************************************************
+
+"make_Cylinder_Bound" construit la surface du cylindre unite :
+	- disque base   de centre (0,0,0) et de rayon 1
+	- disque sommet de centre (0,0,1) et de rayon 1
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp		Surface issue de la construction.
+	level	Niveau de decomposition;
+
+make_Cylinder_Bound (bp, level)
+register Bound	*bp;
+register Index	level;
+
+----------------------------------------------------------------------------
+"make_Cylinder_Face" constuit les faces du cylindre unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Numero des faces	| Z
+			|
+		    0_______col-1
+		    |	    |
+		 col|       |2*col-1
+		    |       |
+	      2*col+1_______3*col-1___Y
+		     /	|
+		   X/	|
+
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp		Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Cylinder_Face (fp, level)
+register Face	*fp;
+register Index	level;
+
+---------------------------------------------------------------------------
+"make_Cylinder_Point" construit les points du cylindre unite.
+Numero des points	| Z
+			0
+		    1_______col
+		    |	    |
+		    |       |
+		    |       |
+		col+1_______2*col___Y
+		     /  |
+		   X/2*col+1
+
+Entree :
+	pp	Tableau de points issu de la construction.
+	level	Niveau de decomposition
+
+static	void	make_Cylinder_Point (pp, level)
+register Point3f	*pp;
+register Index		level;
+
+
+
+
+
+--------------------
+Contenu de fractal.c
+--------------------
+
+Le module "fractal.c" contient les procedures de calcul des fractales.
+
+ open_hash		Ouvre le mode "hash".
+ close_hash		Ferme le mode "hash".
+
+ install		Cree un point d'entree dans la table de hachage.
+ lookup			Recherche un point dans la table de hachage.
+
+ open_rand3		Ouvre le mode "rand3".
+ close_rand3		Ouvre le mode "rand3".
+
+ open_rand4		Ouvre le mode "rand4".
+ close_rand4		Ouvre le mode "rand4".
+
+ edge_subdivision	Subdivise une arete d'une fractale.
+ F3_subdivision		Subdivise une fractale triangulaire.
+ F4_subdivision		Subdivise une fractale trapezoidale.
+
+ make_F3_Bound		Construit une surface a partir d'une fractale F3.
+ make_F4_Bound		Construit une surface a partir d'une fractale F4.
+ make_Fractal_Bound	Construit une surface a partir d'une fractale.
+
+******************************************************************************
+
+"open_hash" ouvre le mode "hash".
+La procedure alloue et initialise les variables utilisees par le hachage
+des points de la fractale.
+
+static	open_hash ()
+
+------------------------------------------------------------------------------
+"close_hash" ferme le mode "hash".
+La procedure libere les variables utilisees par le hachage
+des points de la fractale.
+
+static	close_hash ()
+
+------------------------------------------------------------------------------
+"install" stocke un noeud dans la table de hachage.
+Entree :
+	i, j		Indices (ligne, colonne) d'un point.
+	n		Indice du point dans la table des points.
+Sortie :
+		L'adresse du noeud dans la table de hachage.
+
+static	Hash_node	*install (i, j, n)
+Index	i, j;
+Index	n;
+
+-----------------------------------------------------------------------------
+"lookup" recherche un noeud dans la table de hachage.
+Entree :
+	i, j		Indices (ligne, colonne) d'un point.
+Sortie :
+	L'adresse du noeud dans la table de hachage si present,
+	NULL sinon.
+
+static	Hash_node	*lookup (i, j)
+Index	i, j;
+
+-----------------------------------------------------------------------------
+"open_rand3" ouvre le mode "rand3".
+La procedure alloue et initialise les nombres aleatoires utilises
+pour la generation des fractales triangulaires.
+Entree :
+	f3p		Geometrie de la fractale triangulaire.
+
+static	void	open_rand3 (f3p)
+F3	*f3p;
+
+-----------------------------------------------------------------------------
+"close_rand3" ferme le mode "rand3".
+
+static	void	close_rand3 ()
+
+-----------------------------------------------------------------------------
+"open_rand4" ouvre le mode "rand4".
+La procedure alloue et initialise les nombres aleatoires utilises
+pour la generation des fractales trapezoidales.
+Entree :
+	f4p		Geometrie de la fractale trapezoidale.
+
+static	void	open_rand4 (f4p)
+F4	*f4p;
+
+-----------------------------------------------------------------------------
+"close_rand4" ferme le mode "rand4".
+
+static	void	close_rand4 ()
+
+-----------------------------------------------------------------------------
+"edge_subdivision" calcule le point obtenu par translation
+du point milieu d'un segment.
+milieu.
+Entree :
+	m		Point resultat m = (p0 + p1) / 2 + v * t.
+	p0, p1	Points extremites.
+	v		Direction de translation.
+	t		Norme de la translation.
+Sortie :
+	Indice du point milieu.
+
+static	Index	edge_subdivision (v0, v1, vp, t)
+Index	v0, v1;
+Vector	*vp;
+float	t;
+
+----------------------------------------------------------------------------
+"F3_subdivision"
+
+static	void	F3_subdivision (level, v0, v1, v2)
+Index	level;
+Index	v0, v1, v2;
+
+----------------------------------------------------------------------------
+"F4_subdivision"
+
+static	void	F4_subdivision (level, v0, v1, v2, v3)
+Index	level;
+Index	v0, v1, v2, v3;
+
+----------------------------------------------------------------------------
+"make_F3_Bound" construit la surface de la fractale F3.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	f3p		Fractale triangulaire.
+	bp		Surface issue de la construction.
+	level	Niveau de subdivision de la fractale.
+
+make_F3_Bound (f3p, bp, level)
+F3	*f3p;
+Bound	*bp;
+Index	level;
+
+---------------------------------------------------------------------------- 
+"make_F4_Bound" construit la surface de la fractale.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	f4p		Fractale trapezoidale.
+	bp		Surface issue de la construction.
+	level		Niveau de subdivision de la fractale.
+
+make_F4_Bound (f4p, bp, level)
+F4	*f4p;
+Bound	*bp;
+Index	level;
+
+-----------------------------------------------------------------------------
+"make_Fractal_Bound" construit une surface a partir 
+d'une fractale surfacique.
+Entree :
+	fp	Fractale surfacique source.
+	bp	Surface polyedrique a construire.
+Sortie :
+		TRUE si la fractale surfacique "fp" est valide, FALSE sinon.
+
+make_Fractal_Bound (fp, bp)
+Fractal	*fp;
+Bound	*bp;
+
+
+
+
+
+
+
+
+-----------------
+Contenu de grid.c
+-----------------
+
+Le fichier "grid.c" contient les procedures de gestion
+des surfaces definies par une grille de points.
+
+ free_Grid		Libere une grille de points.
+ malloc_Grid		Alloue une grille de points.
+
+ make_Grid_Bound	Construit la surface de la grille 3D.
+ make_Grid_Face		Construit les faces  de la grille 3D.
+ make_Grid_Point	Construit les points de la grille 3D.
+
+****************************************************************************
+
+
+"free_Grid" libere la memoire d'une grille de points.
+Entree :
+	gp		Grille a liberer.
+
+free_Grid (gp)
+Grid	*gp;
+
+---------------------------------------------------------------------------
+"malloc_Grid" alloue une grille de points.
+Remarque : Les tailles de la grille doivent appartenir a [0,255].
+Entree :
+	gp		Grille a allouer.
+	row		Nombre de lignes   de la grille de points.
+	col		Nombre de colonnes de la grille de points.
+
+malloc_Grid (gp, row, col)
+register Grid	*gp;
+register Index	row, col;
+
+----------------------------------------------------------------------------
+"make_Grid_Bound" construit la surface de la grille 3D :
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	gp		Grille  3D origine.
+	bp		Surface polyedrique issue de la construction.
+
+make_Grid_Bound (gp, bp)
+Grid	*gp;
+Bound	*bp;
+
+----------------------------------------------------------------------------
+"make_Grid_Face" constuit les faces de la grille 3D.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp		Tableau de faces issu de la construction.
+	row, col	Tailles de la grille 3D.
+
+make_Grid_Face (fp, row, col)
+register Face	*fp;
+register Index	row, col;
+
+----------------------------------------------------------------------------
+"make_Grid_Point" construit les points de la grille 3D.
+Entree :
+	lp		Tableau de points 3D origine.
+	pp		Tableau de points issu de la construction.
+
+static	void	make_Grid_Point (lp, pp)
+Point3f_list	*lp;
+Point3f		*pp;
+
+
+
+
+
+
+
+------------------
+contenu de patch.c
+------------------
+
+Le module "patch.c" contient les procedures de gestion 
+des morceaux de surfaces bicubiques de type spline.
+
+Pour plus de renseignements voir : "Parametric Curves, Surfaces and
+Volumes in Computer Graphics and Computer-Aided Geometric Design",James H. Clark Technical Report No. 221. STANFORD UNIVERSITY.
+November 1981.
+
+Note : Les notations employees sont celles utilisees par J. H. Clark.
+
+ compute_M_matrix	Calcule les matrices d'interpolation.
+ compute_S_matrix	Calcule les matrices d'interpolation.
+ set_ForwardDiff_matrix	Initialise une matrice par les differences finies.
+
+ free_Patch		Alloue un morceau de surface.
+ malloc_Patch		Libere un morceau de surface.
+
+ make_Bezier_Bound	Construit une surface a partir d'un patch Bezier.
+ make_Bspline_Bound	Construit une surface a partir d'un patch Bspline.
+ make_Cardinal_Bound	Construit une surface a partir d'un patch Cardinal.
+ make_Patch_Bound	Construit la surface d'un morceau de surface.
+ make_Patch_Bound_scene	Construit une scene de surface polyedrique.
+ make_Patch_Point	Construit les points d'un morceau de surface.
+
+****************************************************************************
+
+
+"set_ForwardDiff_matrix" initialise la matrice par
+une matrice de differences finies d'ordre 3 pour le nombre d'intervalles.
+Entree :
+	m		Matrice a initialiser.
+	n		Nombre d'intervalles.
+
+static	void	set_ForwardDiff_matrix (m, n)
+register Matrix	m;
+Index 		n;
+
+---------------------------------------------------------------------------
+"compute_M_matrix" calcule les matrice de type "m...".
+MAT	= E(t) M
+TMAT	= (E(u) M)t = Mt Et(u)
+Entree :
+	m		Matrice de base du morceau de surface.
+	t		Niveau de decomposition sur les lignes.
+	u		Niveau de decomposition sur les colonnes.
+
+static	void	compute_M_matrix (m, t, u)
+Matrix	m;
+Index	t, u;
+
+---------------------------------------------------------------------------
+"compute_S_matrix" calcule les matrices de type "s_".
+S	= E(t) M G Mt Et(u)
+MAT	= E(t) M
+TMAT	= (E(u) M)t = Mt Et(u)
+Entree :
+	gpp		Point origine dans la matrice des points de controle.
+	col_nbr		Nombre de colonnes de la matrice.
+	row, col	Indice du point origine dans la matrice.
+
+static	void	compute_S_matrix (gpp, col_nbr, row, col)
+register Point3f	*gpp;
+int			col_nbr;
+int			row, col;
+
+----------------------------------------------------------------------------
+"free_Patch" libere un morceau de surface.
+Entree :
+	pp		Morceau de surface a liberer.
+
+free_Patch (pp)
+Patch	*pp;
+
+----------------------------------------------------------------------------
+"malloc_Patch" alloue un morceau de surface.
+Remarque : Les tailles de la grille doivent appartenir a [4,255].
+Entree :
+	pp		Morceau de surface a allouer.
+	row		Nombre de lignes   de la grille de points de controle.
+	col		Nombre de colonnes de la grille de points de controle.
+	row, col	Tailles de la grille des points de controle de la "pp".
+
+malloc_Patch (pp, row, col)
+Patch	*pp;
+Index	row, col;
+
+----------------------------------------------------------------------------
+"make_Patch_Point" construit une grille de points
+a partir d'un morceau de surface echantillonnee.
+Entree :
+	pi		Tableau de points en entree.
+	row_nbr		Nombre de lignes   du tableau "pi".
+	col_nbr		Nombre de colonnes du tableau "pi".
+	nsegt		Niveau de decomposition pour les lignes.
+	nsegu		Niveau de decomposition pour les colonnes.
+	po		Tableau de points a construire.
+
+static	void	make_Patch_Point (pi, row_nbr, col_nbr, nsegt, nsegu, po)
+register Point3f	*pi;
+Index			row_nbr, col_nbr;
+Index 			nsegt, nsegu;
+register Point3f	*po;
+
+---------------------------------------------------------------------------
+"make_Bezier_Bound" construit la surface polyedrique
+d'un morceau de surface Bezier.
+Le sens de parcours du contour d'une face donne le sens de la normale a la face.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	pp		Morceau de surface en entree.
+	bp		Surface issue de la construction.
+
+make_Bezier_Bound (pp, bp)
+Patch	*pp;
+Bound	*bp;
+
+----------------------------------------------------------------------------
+"make_Bspline_Bound" construit la surface polyedrique
+d'un morceau de surface Bspline.
+Le sens de parcours du contour d'une face donne le sens de
+la normale a la face.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	pp		Morceau de surface en entree.
+	bp		Surface issue de la construction.
+
+make_Bspline_Bound (pp, bp)
+Patch	*pp;
+Bound	*bp;
+
+-----------------------------------------------------------------------------
+"make_Cardinal_Bound" construit la surface polyedrique
+d'un morceau de surface Cardinal.
+Le sens de parcours du contour d'une face donne le sens de
+la normale a la face.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	pp		Morceau de surface en entree.
+	bp		Surface issue de la construction.
+
+make_Cardinal_Bound (pp, bp)
+Patch	*pp;
+Bound	*bp;
+
+----------------------------------------------------------------------------
+"make_Patch_Bound" construit une surface polyedrique
+a partir d'un "patch" ou morceau de surface.
+Entree :
+	pp	Morceau de surface en entree.
+	bp	Surface polyedrique a construire.
+Sortie :
+		TRUE si la primitive surfacique "pp" est valide, FALSE sinon.
+
+make_Patch_Bound (pp, bp)
+Patch	*pp;
+Bound	*bp;
+
+----------------------------------------------------------------------------
+"make_Patch_Bound_scene" construit une scene de surfaces
+polyedriques a partir d'une scene de "patches" ou  morceaux de surfaces.
+Le champ "face.edge" n'est pas utilise.
+Entree :
+	psp		Scene de morceaux de surfaces en entree.
+	bsp		Scene de surfaces polyedriques a construire.
+
+make_Patch_Bound_scene (psp, bsp)
+Patch_scene	*psp;
+Bound_scene	*bsp;
+
+
+
+
+
+-----------------
+Contenu de pipe.c
+-----------------
+
+Le module "pipe.c" contient les procedures de construction
+de la surface de la primitive "Pipe".
+
+ make_Pipe_Bound	Construit la surface du tuyau unite.
+ make_Pipe_Face		Construit les faces  du tuyau unite.
+ make_Pipe_Point	Construit les points du tuyau unite.
+
+
+*****************************************************************************
+
+"make_Pipe_Bound" construit la surface du tuyau unite :
+	- disque base   de centre (0,0,0) et de rayon 1
+	- disque sommet de centre (0,0,1) et de rayon 1
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp	Surface issue de la construction.
+	level	Niveau de decomposition;
+
+make_Pipe_Bound (bp, level)
+Bound	*bp;
+Index	level;
+
+"make_Pipe_Face" constuit les faces du tuyau unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Numero des faces	| Z
+			|
+		     ___|___
+		    |	    |
+ 		   0|       |col-1
+		    |       |
+		    |_______|
+		     /	|
+		   X/	|
+
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp		Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Pipe_Face (fp, level)
+register Face	*fp;
+Index		level;
+
+"make_Pipe_Point" construit les points du tuyau unite.
+Numero des points	| Z
+			0
+		    0_______col-1
+		    |	    |
+		    |       |
+		    |       |
+		 col|_______2*col-1
+		     /  |
+		   X/
+Entree :
+	pp	Tableau de points issu de la construction.
+	level	Niveau de decomposition
+
+static	void	make_Pipe_Point (pp, level)
+register Point3f	*pp;
+Index			level;
+
+
+
+
+
+
+-------------------
+Contenu de reduce.c
+-------------------
+
+Le module "reduce.c" contient les procedures de gestion
+de reduction d'une surface polygonale "Bound" par suppression
+de points, d'aretes et de faces.
+
+Avant usage, faire preceder les procedures d'un appel a "open_reduce".
+Apres usage, faire suivre   les procedures d'un appel a "close_reduce".
+
+ open_reduce		Ouvre le mode "reduce".
+ close_reduce		Ferme le mode "reduce".
+
+ Bound_to_Edge		Construit le tableau des aretes d'une surface.
+ Bound_to_Node		Construit le tableau des noeuds d'une surface.
+ Bound_to_Vector	Construit le tableau des normales d'une surface.
+ concat_Vertex		Concatene deux sommets relies par une arete.
+ free_Node		Libere un tableau de noeuds.
+ malloc_Node		Alloue et initialise un tableau de noeuds.
+ get_min_Node		Retourne le noeud minimale d'un tableau de noeuds.
+ add_Edge_to_Node	Ajoute une arete incidente a un noeud.
+ add_Vertex_to_Node	Ajoute un sommet incident a un noeud.
+ sub_Vertex_to_Node	Retire un sommet incident a un noeud.
+ find_Incident		Recherche un sommet incident sur un noeud.
+ mark_Edge_point	Marque les points des aretes significatives.
+ reduce_Bound_Edge	Reduit une surface par elimination des aretes.
+ reduce_Bound_Vertex	Reduit une surface par elimination des sommets.
+ reduce_Bound_Point3f	Reduit une surface par elimination des points.
+ reduce_Point3f		Reduit un tableau de points 3D.
+
+
+****************************************************************************
+
+La procedure "open_reduce" alloue et initialise les variables utilisees
+par le mode "reduce".
+
+open_reduce ()
+
+----------------------------------------------------------------------------
+La procedure "close_reduce" libere les variables utilisees par
+le mode "reduce".
+
+close_reduce ()
+
+----------------------------------------------------------------------------
+La procedure "Bound_to_Edge" construit un tableau d'aretes a partir d'une
+surface plolygonale plane. Les proprietes d'un noeud sont les suivantes :
+- il existe un noeud par point sommet de la surface
+- un noeud contient la liste des sommets des aretes incidentes au noeud
+- un noeud contient la liste des faces des aretes incidentes au noeud
+- le champ "d" du noeud n'est pas utilise.
+
+Entree :
+	bp		Surface polygonale de reference.
+Entree/Sortie :
+	np		Tableau de noeuds a construire.
+
+static	void	Bound_to_Edge (bp, np)
+Bound		*bp;
+register Node	*np;
+
+------------------------------------------------------------------------------
+La procedure "Bound_to_Node" construit un tableau de noeuds a partir d'une
+surface plolygonale plane. Les proprietes du noeud sont les suivantes :
+- il existe un noeud par point sommet de la surface
+- un noeud contient la liste des sommets incidents au noeud
+- un noeud contient la distance des sommets incidents au sommet du noeud
+- l'ensemble des noeuds possede une relation d'ordre sur la distance
+  minimale du sommet du noeud a un sommet incident.
+- le champ "f" du noeud n'est pas utilise.
+
+Entree :
+	bp	Surface polygonale de reference.
+Entree/Sortie :
+	np	Tableau de noeuds a construire.
+
+static	void	Bound_to_Node (bp, np)
+Bound		*bp;
+register Node	*np;
+
+----------------------------------------------------------------------------
+La procedure "Bound_to_Vector" construit un tableau de normales a partir
+d'une surface plolygonale plane.
+Algorithme de Martin Newell :
+Soit le polygone :
+	- de n sommets "i" : 1 <= i <= n.
+	- appartenant au plan definie par : ax + by + cz + d = 0
+Avec j = 1 si i = n, i + 1 sinon, on a :
+	a = Z (yi - yj)(zi + zj)
+	b = Z (zi - zj)(xi + xj)
+	c = Z (xi - xj)(yi + yj)
+Entree :
+	bp		Surface a initialiser.
+Entree/Sortie :
+	vptr		Tableau de normales a initialiser.
+
+static	void	Bound_to_Vector (bp, vptr)
+Bound	*bp;
+Vector	*vptr;	
+
+------------------------------------------------------------------------------
+La procedure "concat_Vertex" concatene deux sommets relies par une arete.
+La suppression s'effectue par translation du second sommet vers le premier.
+Entree :
+	nptr		Tableau des noeuds de la surface.
+	pptr		Tableau des points de la surface.
+	vb		Sommet a la base de l'arete.
+	vt		Sommet a supprimer par translation.
+
+static	void	concat_Vertex (nptr, pptr, vb, vt)
+register Node		*nptr;
+register Point3f	*pptr;
+Index			vb, vt;
+
+-----------------------------------------------------------------------------
+La procedure "free_Node" libere un tableau de noeuds.
+Entree :
+	nptr		Tableau de noeuds a liberer.
+	size		Taille du tableau de noeuds a liberer.
+
+static	void	free_Node (nptr, size)
+Node	*nptr;
+int	size;
+
+-----------------------------------------------------------------------------
+La procedure "get_min_Node" retourne le noeud minimale d'un tableau.
+Un noeud est minimale s'il possede la plus petite distance entre
+le sommet du noeud et un sommet incident. En cas d'egalite avec un autre
+noeud, le noeud minimale est celui qui possede la somme des distances
+des sommets incidents la plus petite.
+Entree :
+	np		Tableau de noeuds.
+	size		Taille  du tableau de noeuds.
+Sortie :
+	Pointeur du noeud minimale.
+	NULL si le tableau ne possede pas de noeud minimale.
+
+static	Node	*	get_min_Node (np, size)
+register Node	*np;
+int		size;
+
+------------------------------------------------------------------------------
+La procedure "malloc_Node" alloue et initialise un tableau de noeuds.
+Entree :
+	size	Nombre du tableau de noeuds a allouer.
+Sortie :
+	Pointeur sur le premier element du tableau.
+	NULL en cas d'erreur.
+
+static	Node*	malloc_Node (size)
+int	size;
+
+------------------------------------------------------------------------------
+La procedure "add_Edge_to_Node" ajoute une arete incidente a un noeud.
+Les champs "min" et "d" du noeud ne sont pas utilises.
+Entree :
+	np		Noeud auquel on ajoute l'arete incidente.
+	v		Sommet de l'arete incidente a ajouter.
+	f		Face qui contient l'arete incidente a jouter.
+Sortie :
+	1 si l'arete incidente est effectivement ajoute.
+	0 sinon.
+
+static	int	add_Edge_to_Node (np, v, f)
+register Node	*np;
+register Index	v;
+Index		f;
+
+-----------------------------------------------------------------------------
+La procedure "add_Vertex_to_Node" ajoute un sommet incident a un noeud.
+Le champ "f" du noeud n'est pas utilise.
+Entree :
+	np	Noeud auquel on ajoute le sommet incident.
+	v	Sommet incident a ajouter.
+	d	Distance de la connection (sommet incident, sommet au noeud).
+Sortie :
+	1 si le sommet incident est effectivement ajoute.
+	0 sinon.
+
+static	int	add_Vertex_to_Node (np, v, d)
+register Node	*np;
+register Index	v;
+float		d;
+
+-----------------------------------------------------------------------------
+La procedure "sub_Vertex_to_Node" retire un sommet incident a un noeud.
+La procedure verifie que le sommet incident est different du sommet au noeud
+et que le sommet a retirer existe bien.
+Entree :
+	np	Noeud auquel on retire le sommet incident.
+	v	Sommet incident a retirer.
+Sortie :
+	1 si le sommet incident est effectivement retire.
+	0 sinon.
+
+static	int	sub_Vertex_to_Node (np, v)
+register Node	*np;
+register Index	v;
+
+-----------------------------------------------------------------------------
+La procedure "find_Incident" recherche un sommet incident dans la liste
+des sommets incidents d'un noeud.
+Entree :
+	np	Noeud ou s'effectue la recherche.
+	v	Numero du sommet incident a rechercher.
+Sortie :
+	Pointeur du sommet incident s'il existe,
+	NULL sinon.
+
+static	Incident*	find_Incident (np, v)
+Node		*np;
+register Index	v;
+
+-----------------------------------------------------------------------------
+La procedure "mark_Edge_point" marque les points des aretes significatives.
+Une arete est significative si :
+- elle appartient a la silouhette de la surface,
+  c'est-a-dire si elle appartient a une seule face.
+- elle appartient a deux faces dont l'angle entre les normales
+  est superieur a un angle seuil.
+Un compteur de meme indice est associe a chaque point.
+Un compteur strictement positif indique que le point correspondant (de meme
+indice) appartient a une arete significative.
+Entree :
+	nptr	Tableau de noeuds de la surface.
+	size	Taille du tableau de noeuds.
+	vptr	Tableau des normales aux faces de la surface.
+	cptr	Tableau des compteurs.
+	angle	Angle d'ouverture minimale en degres entre les normales
+		des faces pour rendre une arete significative
+
+static	void 	mark_Edge_point (nptr, size, vptr, cptr, angle)
+Node	*nptr;
+int	size;
+Vector	*vptr;
+int	*cptr;
+float	angle;
+
+-----------------------------------------------------------------------------
+La procedure "reduce_Bound_Edge" reduit une surface polygonale par
+elimination des aretes dont la taille est inferieure a une distance seuil.
+Les faces devenues non valides par l'elimination des aretes sont elles meme 
+eliminees.
+Entree :
+	bp	Surface polygonale a reduire.
+	d	Distance maximale de concatenation des points.
+	angle	Angle minimal en degres entre les normales de deux faces
+		pour rendre l'arete commune sigificative.
+Sortie:
+	Pointeur sur la surface reduite resultat.
+	NULL si la surface reduite est vide.
+
+Bound*	reduce_Bound_Edge (bp, d, angle)
+Bound	*bp;
+float	d, angle;
+
+-----------------------------------------------------------------------------
+La procedure "reduce_Bound_Point3f" reduit une surface en concatenant
+les points dont la distance est inferieure a une distance seuil.
+Entree :
+	bp	Surface a reduire.
+	d	Distance maximale de concatenation des points.
+Sortie:
+	Pointeur sur la surface reduite resultat.
+	NULL si la surface reduite est vide.
+
+Bound	*	reduce_Bound_Point3f (bp, d)
+Bound	*bp;
+float	d;
+
+-----------------------------------------------------------------------------
+La procedure "reduce_Bound_Vertex" reduit une surface polygonale par
+elimination des sommets. Les faces devenues non valides par l'elimination des
+sommets sont elles meme eliminees.
+Entree :
+	bp	Surface polygonale a reduire.
+	precent	Pourcentage de reduction du nombre de points de la surface.
+Sortie:
+	Pointeur sur la surface reduite resultat.
+	NULL si la surface reduite est vide.
+
+Bound*	reduce_Bound_Vertex (bp, percent)
+Bound	*bp;
+float	percent;
+
+-----------------------------------------------------------------------------
+La procedure "reduce_Point3f" reduit un tableau de points 3D en concatenant
+les points dont la distance est inferieure a un seuil.
+Apres concatenation, le tableau des marques contient les nouveaux indices
+des points dans le tableau en sortie.
+Entree :
+	from	Tableau de points 3D a concatener.
+	size	Taille du tableau de points 3D.
+	d	Distance maximale de concatenation des points.
+	idem	Booleen indiquant s'il existe des points a recopier tels quels.
+Entree/Sortie :
+	ip	Tableau des nouveaux indices des points.
+	to	Tableau de points 3D apres concatenation
+Sortie :
+	Taille du tableau de points 3D apres concatenation.
+
+static	int	reduce_Point3f (from, size, d, idem, ip, to)
+register Point3f	*from;
+int			size;
+register float		d;
+int			idem;
+register int		*ip;
+register Point3f	*to;
+
+
+
+
+
+-------------------
+Contenu de sphere.c 
+-------------------
+
+Le module "sphere.c" contient les procedures de construction
+de la surface de la primitive "Sphere".
+
+ make_Sphere_Bound	Construit la surface de la sphere unite.
+ make_Sphere_Face	Construit les faces  de la sphere unite.
+ make_Sphere_Point	Construit les points de la sphere unite.
+
+*****************************************************************************
+
+La procedure "make_Sphere_Bound" construit la surface de la sphere unite :
+ 	- centre (0,0,0) et rayon 1
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp	Surface issue de la construction.
+	level	Niveau de decomposition.
+
+make_Sphere_Bound (bp, level)
+register Bound	*bp;
+register Index	level;
+
+------------------------------------------------------------------------------
+La procedure "make_Sphere_Face" constuit les faces de la sphere unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Sphere_Face (fp, level)
+register Face	*fp;
+register Index	level;
+
+-----------------------------------------------------------------------------
+La procedure "make_Sphere_Point" construit les points de la sphere unite.
+Entree :
+	pp	Tableau de points issu de la construction.
+	level	Niveau de decomposition.
+Remarque : Les points des poles ne sont pas dupliques.
+
+static	void	make_Sphere_Point (pp, level)
+register Point3f	*pp;
+register Index		level;
+
+
+
+
+
+
+------------------
+Contenu de strip.c
+------------------
+
+Le module "strip.c" contient les procedures de calcul
+de la matrice d'inertie et des valeurs propres.
+Les vecteurs propres de la matrice d'inertie forment une base orthonormee directe.
+
+CSSP	: Matrix of Centered (or Corrected) Sums and Squares and Products.
+
+ make_Point3f_list_inertia	Construit une boite englobant les axes 
+				d'inertie d'une liste de points.
+ strip_Point3f_list		Construit une boite englobant les axes
+				d'inertie d'une surface.
+
+*****************************************************************************
+
+La procedure "make_Point3f_list_inertia" construit le parallelepipede
+rectangle englobant les axes principaux d'inertie d'une liste de points.
+Entree :
+	plp	Liste de points origine.
+Entree/Sortie :
+	bp	Surface englobante a construire.
+
+make_Point3f_list_inertia (plp, bp)
+Point3f_list	*plp;
+Bound		*bp;
+
+-------------------------------------------------------------------------------
+La procedure "strip_Point3f_list" construit le parallelepipede rectangle
+englobant les axes principaux d'inertie de la surface.
+Entree :
+	bp	Surface origine.
+Entree/Sortie :
+	ibp	Surface englobante a construire.
+
+strip_Point3f_list (level, point, plp, bsp)
+int			level, point;
+register Point3f_list	*plp;
+Bound_scene		*bsp;
+
+
+
+
+
+------------------
+Contenu de torus.c
+------------------
+
+Le module "torus.c" contient les procedures de construction
+de la surface de la primitive "Torus".
+
+ make_Torus_Bound	Construit la surface du tore unite.
+ make_Torus_Face	Construit les faces  du tore unite.
+ make_Torus_Point	Construit les points du tore unite.
+
+*****************************************************************************
+
+La procedure "make_Torus_Bound" construit la surface du tore unite :
+	- la section generatrice est le centre unite de centre (r,0,0)
+	  et d'axe Y
+	- la surface de revolution est obtenue par rotation de la section
+	  autour de l'axe Z dans le sens direct du repere droit (X,Y,Z).
+Le sens de parcours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp		Surface issue de la construction.
+	level		Niveau de decomposition.
+	r		Rayon exterieur du tore.
+
+make_Torus_Bound (bp, level, r)
+register Bound	*bp;
+register Index	level;
+float		r;
+
+------------------------------------------------------------------------------
+La procedure "make_Torus_Face" constuit les faces du tore unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Les faces d'une ligne "row" decrivent la surface de l'anneau compris
+entre deux sections consecutives.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+	level	Niveau de decomposition.
+
+static	void	make_Torus_Face (fp, level)
+register Face	*fp;
+register Index	level;
+
+----------------------------------------------------------------------------
+La procedure "make_Torus_Point" construit les points du tore unite.
+Les points d'une ligne "row" decrivent une section.
+La premiere section (ligne 0) est le cercle unitaire d'axe Y
+translate par le vecteur (r,0,0).
+Les autres sections sont obtenues par rotation de la premiere section
+par rapport a l'axe Z du repere droit (X,Y,Z) dans le sens direct.
+Entree :
+	pp	Tableau de points issu de la construction.
+	level	Niveau de decomposition.
+	r	Rayon exterieur du tore.
+
+static	void	make_Torus_Point (pp, level, r)
+register Point3f	*pp;
+Index			level;
+float			r;
+
+
+
+
+
+
+------------------
+Contenu de wedge.c
+------------------
+Le module "wedge.c" contient les procedures de construction
+de la surface de la primitive "Wedge".
+
+Remarque : Le niveau de decompostion de la primitive "Wedge" est fixe.
+
+ make_Wedge_Bound	Construit la  surface du coin unite.
+ make_Wedge_Face	Construit les faces   du coin unite.
+ make_Wedge_Point	Construit les points  du coin unite.
+
+****************************************************************************
+
+"make_Wedge_Bound" construit la surface du coin unite :
+ 	- origine   (0,0,0).
+	- diagonale (1,1,1).
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Remarque : Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	bp	Surface issue de la construction.
+
+make_Wedge_Bound (bp)
+register Bound	*bp;
+
+------------------------------------------------------------------------------
+La procedure "make_Wedge_Face" constuit les 6 faces du coin unite.
+Le sens de parsours du contour d'une face donne le sens de la normale.
+Numeros des faces		|Y
+				| 
+				|    4/
+			       /  \  /
+			      /     \
+			     /        \
+			    | \	        \
+		       0 ___|   \    1    \___X
+			    |     \      /
+			    | 	3   \   /
+			    |_________\/
+			    /   |
+			  Z/    |2
+Remarque :
+Le champ "edge" de "Face" n'est pas utilise.
+Entree :
+	fp	Tableau de faces issu de la construction.
+
+static	void	make_Wedge_Face (fp)
+register Face	*fp;
+
+------------------------------------------------------------------------------
+La procedure "make_Wedge_Point" constuit les 8 points du coin unite.
+Numeros des points		|Y
+				| 
+				1
+			       /| \
+			      / |   \
+			    5   |     \
+			    | \	|       \
+			    |   \0________2___X
+			    |  /  \      /
+			    | /	    \   /
+			    3/________4/
+			    /
+			  Z/
+Entree :
+	pp	Tableau de points issu de la construction.
+
+static	void
+make_Wedge_Point (pp)
+register Point3f	*pp;
+

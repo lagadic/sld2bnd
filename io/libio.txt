@@ -1,0 +1,296 @@
+*****************************************
+*	LIBRAIRIE D'ENTREES/SORTIES	*
+*****************************************
+
+Fichiers source:
+	-boundio.c
+	-keyword.c
+	-lgrcio.c
+	-nffio.c
+
+
+
+--------------------
+Contenu de boundio.c
+--------------------
+
+Le module "boundio.c" contient les procedures d'entree/sortiedes types definis dans le module "bound.h".
+
+ fprintf_Bound		Ecrit en ascii   une surface.
+ fprintf_Face_list	Ecrit en ascii   une liste de faces.
+ fprintf_Point_list	Ecrit en ascii   une liste de points.
+
+*************************************************************************
+
+"fprintf_Bound" ecrit en ascii une surface polyedrique.
+Entree:	f	Fichier en sortie.
+	bp	Surface a ecrire.
+
+fprintf_Bound (f, bp)
+register FILE	*f;
+register Bound	*bp;
+
+-----------------------------------------------------------------------
+"fprintf_Face_list" ecrit en ascii une liste de faces.
+Entree:	f	Fichier en sortie.
+	lp	Liste de faces a ecrire.
+
+fprintf_Face_list (f, lp)
+register FILE	*f;
+Face_list	*lp;
+
+-----------------------------------------------------------------------
+"fprintf_Point_list" ecrit en ascii une liste de points.
+Entree:	f	Fichier en sortie.
+	lp	Liste de points a ecrire.
+
+fprintf_Point_list (f, lp)
+register FILE		*f;
+register Point3f_list	*lp;
+
+
+
+
+
+
+--------------------
+Contenu de keyword.c
+--------------------
+
+Le module "keyword.c" contient les procedures de gestion
+des mots cles retournes par l'analyseur lexical "lex".
+
+ open_keyword	  Ouvre le mode de gestion des mots cles.
+ close_keyword	  Ferme le mode de gestion des mots cles.
+
+ open_hash	  Ouvre le mode de codage par "hachage".
+ close_hash	  Ferme le mode de codage par "hachage".
+ hashpjw	  Fonction de "hachage".
+
+ delete_keyword	  Efface    un   mot cle.
+ get_keyword	  Retourne  un   mot cle.
+ insert_keyword	  Insere    un   mot cle.
+ get_cmd	  Indique si  un mot cle est le debut d'une commande.
+ get_symbol	  Recherche d'un mot cle ou d'un identificateur.
+
+*************************************************************************
+
+
+"open_keyword" alloue et initialise les variables utilisees
+par les procedures de gestion des mots cles.
+Entree:	kwp	Tableau des mots cles termine par NULL.
+
+open_keyword (kwp)
+register Keyword	*kwp;
+
+-------------------------------------------------------
+"close_keyword" libere les variables utilisees
+par les procedures de gestion des mots cles.
+
+close_keyword ()
+
+-------------------------------------------------------
+"open_hash" alloue et initialise la table de codage.
+
+static	void	open_hash ()
+
+-------------------------------------------------------
+"close_hash" libere la table de codage et ses elements.
+
+static	void	close_hash ()
+
+-------------------------------------------------------
+"hashpjw" calcule un indice code a partir de la chaine de caracteres "str".
+Pour plus de renseignements, voir :
+	"Compilers. Principles, Techniques, and Tools",
+	A.V. AHO, R. SETHI, J.D. ULLMAN,
+	ADDISON-WESLEY PUBLISHING COMPANY, pp 436.
+Entree:	str	Chaine de caracteres a coder.
+Sortie:	Le code de la chaine.
+
+static	int	hashpjw (str)
+register char	*str;
+
+-------------------------------------------------------
+#ifdef	debug
+"delete_keyword" efface le premier mot cle ayant pour
+identificateur la chaine de caractere "str".
+Entree:	str	Chaine de caracteres de l'identificateur du mot cle.
+
+static	void	delete_keyword (str)
+register char	*str;
+#endif	debug
+
+-------------------------------------------------------
+#ifdef	debug
+#define	START_ARG	0
+#define	NEXT_ARG	1
+
+"get_keyword" retourne un a un les mots cles contenus dans la table de "hachage"
+La procedure permet le parcourt de la table de "hachage" avec
+Entree:	START_ARG	initialise le parcourt de la table.
+	NEXT_ARG	continue   le parcourt de la table.
+Sortie:	Pointeur sur le mot cle, NULL en fin de liste pour NEXT_ARG.
+	NULL pour tout autre entree.
+
+static	char	*get_keyword (mode)
+int	mode;
+#endif	debug
+
+-------------------------------------------------------
+"insert_keyword" insere en tete d'un point d'entree
+de la table de "hachage" le mot cle ayant pour identificateur
+la chaine de caracteres "str" et pour valeur "token".
+Entree:	str	Chaine de caracteres du mot cle.
+	token	Valeur du jeton associe au mot cle.
+
+static	void	insert_keyword (str, token, b)
+char	*str;
+int	token;
+Byte	b;
+
+-------------------------------------------------------
+"get_cmd" retourne le boolean indiquant si le dernier symbole
+recherche par la procedure "get_symbol" est le debut d'une commande.
+Sortie:	TRUE si le dernier symbole est le debut d'une commande.
+	FALSE sinon.
+
+get_cmd ()
+
+-------------------------------------------------------
+"get_symbol" verifie que la chaine pointee par "ident"
+de longueur "length" est un mot cle.
+Global:	is_cmd	Booleen indiquant le debut d'une commande.
+Entree:	ident	Chaine de l'identificateur.
+	length	Nombre de caracteres de la chaine.
+NB: La chaine "ident" n'est pas terminee par '\0'.
+Sortie:	Valeur du jeton associe si c'est un mot cle, 0 sinon.
+
+get_symbol (ident, length)
+char	*ident;
+int	length;	
+
+
+
+
+
+
+
+-------------------
+Contenu de lgrcio.c
+-------------------
+
+Le module "lgrcio.c" contient les procedures d'entree/sortie
+des types definis dans le module "lgrc_type.h".
+Le format utilise appartient au langage PISYN.
+Pour plus de renseignement, voir pisyn(1), solid(1).
+
+
+ copy_mls_lsm		Copie une transposee de matrice "double" en "float".
+
+ fprintf_Position	Ecrit en ascii	 une position relative.
+ fprintf_Translate	Ecrit en ascii	 une translation relative.
+ fprintf_lgrc_pri	Ecrit en ascii   une primitives solide LGRC.
+
+
+
+****************************************************************************
+
+La procedure "copy_mls_lsm" copie la transposee de Matrice (double) "mls"
+dans Matrix (float) "lsm".
+La matrice "mls" est une matrice de type provenant de "lgrc_type.h".
+La matrice "lsm" est une matrice de type provenant de "world.h".
+Note :
+ATTENTION  a l'inversion des indices entre "mls" et "lsm".
+La dernier colonne de "lsm" vaut [0, 0, 0, 1].
+Entree :
+	mls		Matrice en entree.
+	lsm		Matrice en sortie.
+
+static	void	copy_mls_lsm (mls, lsm)
+register Matrice	mls;
+register Matrix		lsm;
+
+
+-----------------------------------------------------------------------------
+La procedure "fprintf_Image_parameters" affiche en ascii les parametres
+de l'image de synthese.
+Entree :
+	f		Fichier en sortie.
+	ip		Parametres de l'image a afficher.
+
+fprintf_Image_parameters (f, ip)
+register FILE			*f;
+register Image_parameters	*ip;
+
+-----------------------------------------------------------------------------
+La procedure "fprintf_View_parameters" affiche en ascii les parametres
+de la prise de vue.
+Entree :
+	f		Fichier en sortie.
+	vp		Parametres de la prise de vue a afficher.
+
+fprintf_View_parameters (f, vp)
+register FILE			*f;
+register View_parameters	*vp;
+
+-----------------------------------------------------------------------------
+La procedure "fprintf_Position" affiche en ascii une position relative.
+Entree :
+	f		Fichier en sortie.
+	pp		Position relative a afficher.
+
+fprintf_Position (f, pp)
+register FILE		*f;
+register Position	*pp;
+
+-----------------------------------------------------------------------------
+La procedure "fprintf_Translate" affiche en ascii une translation relative.
+Entree :
+	f		Fichier en sortie.
+	vp		Vecteur de translation relative a afficher.
+
+fprintf_Translate (f, vp)
+register FILE	*f;
+register Vector	*vp;
+
+-----------------------------------------------------------------------------
+La procedure "fprintf_lgrc_pri" ecrit en ascii une primitive solide.
+Entree :
+	f		Fichier en sortie.
+	t22p		Primitive solide a ecrire.
+
+fprintf_lgrc_pri (f, t22p)
+register FILE	*f;
+register T22	*t22p;
+
+
+
+
+
+------------------
+Contenu de nffio.c
+------------------
+
+Le module "nffio.c" contient les procedures d'entree/sortie
+des types definis dans le langage NFF.
+Pour plus de renseignement, voir NFF(1) et bound(1).
+
+ fprintf_...		Ecrit en ascii   une variable de type "...".
+ fscanf_...		Lit   en ascii   une variable de type "...".
+ write_...		Ecrit en binaire une variable de type "...".
+
+
+*****************************************************************************
+
+
+La procedure "fprintf_Bound_NFF" affiche une surface polygonale de type bound
+sous forme de polygones dans le format NFF.
+Entree :
+	fp		Fichier en sortie.
+	bp		Surface a afficher.
+
+fprintf_Bound_NFF (fo, bp)
+register FILE	*fo;
+Bound		*bp;
+
